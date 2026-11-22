@@ -1,0 +1,1612 @@
+/* AUTO-GENERATED from data/catalog.json — do not edit by hand.
+   Regenerate: node scripts/generate-catalog-js.mjs
+   This file lets the runner work offline (file://) without the API. */
+window.MITRA_CATALOG = {
+  "version": 1,
+  "brand": {
+    "name": "Mitra System",
+    "product": "Business Runner",
+    "tagline": "Ek system. Har business. Har sheher.",
+    "support": "916393741171"
+  },
+  "cities": {
+    "kanpur": {
+      "id": "kanpur",
+      "name": "Kanpur",
+      "region": "Uttar Pradesh",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1,
+      "delivery": "45 min",
+      "hours": "8am – 10pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Civil Lines, Kanpur",
+      "tier": "home",
+      "global": false
+    },
+    "lucknow": {
+      "id": "lucknow",
+      "name": "Lucknow",
+      "region": "Uttar Pradesh",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1.05,
+      "delivery": "50 min",
+      "hours": "8am – 10pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Hazratganj, Lucknow",
+      "tier": "india",
+      "global": false
+    },
+    "delhi": {
+      "id": "delhi",
+      "name": "Delhi NCR",
+      "region": "Delhi",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1.15,
+      "delivery": "40 min",
+      "hours": "8am – 11pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Saket, New Delhi",
+      "tier": "india",
+      "global": false
+    },
+    "mumbai": {
+      "id": "mumbai",
+      "name": "Mumbai",
+      "region": "Maharashtra",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1.25,
+      "delivery": "35 min",
+      "hours": "7am – 11pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Bandra West, Mumbai",
+      "tier": "india",
+      "global": false
+    },
+    "bengaluru": {
+      "id": "bengaluru",
+      "name": "Bengaluru",
+      "region": "Karnataka",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1.2,
+      "delivery": "40 min",
+      "hours": "7am – 11pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Indiranagar, Bengaluru",
+      "tier": "india",
+      "global": false
+    },
+    "hyderabad": {
+      "id": "hyderabad",
+      "name": "Hyderabad",
+      "region": "Telangana",
+      "country": "India",
+      "currency": "INR",
+      "symbol": "₹",
+      "decimals": 0,
+      "rate": 1.1,
+      "delivery": "45 min",
+      "hours": "8am – 11pm",
+      "timezone": "Asia/Kolkata",
+      "address": "Jubilee Hills, Hyderabad",
+      "tier": "india",
+      "global": false
+    },
+    "london": {
+      "id": "london",
+      "name": "London",
+      "region": "England",
+      "country": "United Kingdom",
+      "currency": "GBP",
+      "symbol": "£",
+      "decimals": 2,
+      "rate": 0.045,
+      "delivery": "60 min",
+      "hours": "9am – 9pm",
+      "timezone": "Europe/London",
+      "address": "Shoreditch, London",
+      "tier": "global",
+      "global": true
+    },
+    "dubai": {
+      "id": "dubai",
+      "name": "Dubai",
+      "region": "Dubai",
+      "country": "UAE",
+      "currency": "AED",
+      "symbol": "AED ",
+      "decimals": 0,
+      "rate": 0.09,
+      "delivery": "60 min",
+      "hours": "9am – 11pm",
+      "timezone": "Asia/Dubai",
+      "address": "Business Bay, Dubai",
+      "tier": "global",
+      "global": true
+    },
+    "newyork": {
+      "id": "newyork",
+      "name": "New York",
+      "region": "NY",
+      "country": "USA",
+      "currency": "USD",
+      "symbol": "$",
+      "decimals": 2,
+      "rate": 0.06,
+      "delivery": "45 min",
+      "hours": "8am – 10pm",
+      "timezone": "America/New_York",
+      "address": "Brooklyn, New York",
+      "tier": "global",
+      "global": true
+    }
+  },
+  "verticals": {
+    "kirana": {
+      "id": "kirana",
+      "name": "Kirana / Grocery",
+      "label": "Kirana",
+      "demoName": "Sharma Kirana & General Store",
+      "tagline": "Ghar ka saara saman, 45 minute me.",
+      "hero": "Roz ka grocery, ek WhatsApp message me.",
+      "accent": "#25d366",
+      "accentDark": "#0f7a43",
+      "mode": "delivery",
+      "cta": "WhatsApp par order karein",
+      "fulfilmentLabel": "Delivery slot",
+      "addressLabel": "Delivery address",
+      "rating": "4.8",
+      "reviews": "320+",
+      "ordersLabel": "orders",
+      "categories": [
+        {
+          "id": "staples",
+          "label": "Staples"
+        },
+        {
+          "id": "dairy",
+          "label": "Dairy"
+        },
+        {
+          "id": "snacks",
+          "label": "Snacks"
+        },
+        {
+          "id": "household",
+          "label": "Household"
+        },
+        {
+          "id": "personal",
+          "label": "Personal care"
+        },
+        {
+          "id": "beverages",
+          "label": "Beverages"
+        }
+      ],
+      "items": [
+        {
+          "id": "atta",
+          "name": "Aashirvaad Atta",
+          "unit": "5 kg pack",
+          "price": 265,
+          "mrp": 290,
+          "category": "staples",
+          "emoji": "🌾",
+          "badge": "Bestseller",
+          "stock": 40,
+          "tags": [
+            "atta",
+            "flour",
+            "roti"
+          ]
+        },
+        {
+          "id": "salt",
+          "name": "Tata Salt",
+          "unit": "1 kg",
+          "price": 28,
+          "category": "staples",
+          "emoji": "🧂",
+          "stock": 60,
+          "tags": [
+            "salt",
+            "namak"
+          ]
+        },
+        {
+          "id": "oil",
+          "name": "Fortune Sunflower Oil",
+          "unit": "1 L pouch",
+          "price": 145,
+          "mrp": 160,
+          "category": "staples",
+          "emoji": "🌻",
+          "stock": 30,
+          "tags": [
+            "oil",
+            "cooking"
+          ]
+        },
+        {
+          "id": "rice",
+          "name": "India Gate Basmati Rice",
+          "unit": "5 kg",
+          "price": 520,
+          "mrp": 560,
+          "category": "staples",
+          "emoji": "🍚",
+          "stock": 18,
+          "tags": [
+            "rice",
+            "chawal"
+          ]
+        },
+        {
+          "id": "milk",
+          "name": "Amul Taaza Milk",
+          "unit": "500 ml",
+          "price": 27,
+          "category": "dairy",
+          "emoji": "🥛",
+          "badge": "Fresh",
+          "stock": 50,
+          "tags": [
+            "milk",
+            "doodh"
+          ]
+        },
+        {
+          "id": "curd",
+          "name": "Amul Masti Curd",
+          "unit": "400 g",
+          "price": 35,
+          "category": "dairy",
+          "emoji": "🥣",
+          "stock": 25,
+          "tags": [
+            "curd",
+            "dahi"
+          ]
+        },
+        {
+          "id": "maggi",
+          "name": "Maggi Noodles",
+          "unit": "12-pack",
+          "price": 168,
+          "mrp": 180,
+          "category": "snacks",
+          "emoji": "🍜",
+          "badge": "Bestseller",
+          "stock": 35,
+          "tags": [
+            "maggi",
+            "noodles"
+          ]
+        },
+        {
+          "id": "tea",
+          "name": "Tata Tea Premium",
+          "unit": "500 g",
+          "price": 275,
+          "mrp": 295,
+          "category": "beverages",
+          "emoji": "🍵",
+          "badge": "Bestseller",
+          "stock": 22,
+          "tags": [
+            "tea",
+            "chai"
+          ]
+        },
+        {
+          "id": "surf",
+          "name": "Surf Excel Detergent",
+          "unit": "1 kg",
+          "price": 135,
+          "mrp": 150,
+          "category": "household",
+          "emoji": "🧼",
+          "stock": 18,
+          "tags": [
+            "detergent",
+            "washing"
+          ]
+        },
+        {
+          "id": "colgate",
+          "name": "Colgate Strong Teeth",
+          "unit": "200 g",
+          "price": 99,
+          "category": "personal",
+          "emoji": "🪥",
+          "stock": 26,
+          "tags": [
+            "toothpaste",
+            "colgate"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Monthly grocery pack",
+          "price": 2499,
+          "desc": "25 essentials, one delivery, fixed price."
+        },
+        {
+          "name": "Free home delivery",
+          "price": 0,
+          "desc": "₹299+ orders par, same-day."
+        },
+        {
+          "name": "WhatsApp reorder",
+          "price": 0,
+          "desc": "Pichla order ek message me repeat."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Kitne time me delivery aayegi?",
+          "a": "Aapke sheher ke hisaab se 35–60 minute. Order confirm hone par WhatsApp par live update milta hai."
+        },
+        {
+          "q": "Minimum order kitna hai?",
+          "a": "Koi minimum nahi. ₹299+ par delivery free, usse neeche ₹29."
+        },
+        {
+          "q": "Payment kaise hota hai?",
+          "a": "Cash on delivery ya UPI on delivery. Prepaid UPI optional hai."
+        }
+      ]
+    },
+    "clinic": {
+      "id": "clinic",
+      "name": "Clinic / Doctor",
+      "label": "Clinic",
+      "demoName": "Dr. Mehta Family Clinic",
+      "tagline": "Consultation, tests aur follow-up — ek hi jagah.",
+      "hero": "Doctor se baat karein, bina line me lage.",
+      "accent": "#2f80ed",
+      "accentDark": "#14539e",
+      "mode": "appointment",
+      "cta": "Appointment book karein",
+      "fulfilmentLabel": "Preferred time",
+      "addressLabel": "Patient address / mode",
+      "rating": "4.9",
+      "reviews": "180+",
+      "ordersLabel": "visits",
+      "categories": [
+        {
+          "id": "consult",
+          "label": "Consultation"
+        },
+        {
+          "id": "diagnostics",
+          "label": "Diagnostics"
+        },
+        {
+          "id": "procedures",
+          "label": "Procedures"
+        },
+        {
+          "id": "wellness",
+          "label": "Wellness"
+        }
+      ],
+      "items": [
+        {
+          "id": "consult",
+          "name": "General Consultation",
+          "unit": "20 min",
+          "price": 300,
+          "category": "consult",
+          "emoji": "🩺",
+          "badge": "Bestseller",
+          "stock": 20,
+          "tags": [
+            "doctor",
+            "consult"
+          ]
+        },
+        {
+          "id": "followup",
+          "name": "Follow-up Visit",
+          "unit": "15 min",
+          "price": 150,
+          "category": "consult",
+          "emoji": "🔁",
+          "stock": 30,
+          "tags": [
+            "followup",
+            "review"
+          ]
+        },
+        {
+          "id": "tele",
+          "name": "Teleconsultation",
+          "unit": "video call",
+          "price": 199,
+          "category": "consult",
+          "emoji": "📱",
+          "badge": "Popular",
+          "stock": 25,
+          "tags": [
+            "online",
+            "video"
+          ]
+        },
+        {
+          "id": "blood",
+          "name": "Full Blood Panel",
+          "unit": "1 test",
+          "price": 899,
+          "mrp": 1200,
+          "category": "diagnostics",
+          "emoji": "🧪",
+          "stock": 15,
+          "tags": [
+            "blood",
+            "lab",
+            "test"
+          ]
+        },
+        {
+          "id": "ecg",
+          "name": "ECG",
+          "unit": "1 test",
+          "price": 500,
+          "category": "diagnostics",
+          "emoji": "❤️",
+          "stock": 12,
+          "tags": [
+            "heart",
+            "ecg"
+          ]
+        },
+        {
+          "id": "dressing",
+          "name": "Wound Dressing",
+          "unit": "1 session",
+          "price": 250,
+          "category": "procedures",
+          "emoji": "🩹",
+          "stock": 20,
+          "tags": [
+            "wound",
+            "dressing"
+          ]
+        },
+        {
+          "id": "vaccine",
+          "name": "Flu Vaccination",
+          "unit": "1 dose",
+          "price": 600,
+          "category": "procedures",
+          "emoji": "💉",
+          "stock": 10,
+          "tags": [
+            "vaccine",
+            "flu"
+          ]
+        },
+        {
+          "id": "checkup",
+          "name": "Annual Health Checkup",
+          "unit": "package",
+          "price": 1499,
+          "mrp": 2200,
+          "category": "wellness",
+          "emoji": "📋",
+          "badge": "Bestseller",
+          "stock": 8,
+          "tags": [
+            "checkup",
+            "annual"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Family health plan",
+          "price": 2999,
+          "desc": "4 consultations + 1 basic panel per year."
+        },
+        {
+          "name": "Home sample collection",
+          "price": 199,
+          "desc": "Lab sample ghar se, report WhatsApp par."
+        },
+        {
+          "name": "Teleconsult pack",
+          "price": 799,
+          "desc": "5 video consultations, 3 months validity."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Appointment kaise confirm hogi?",
+          "a": "Slot choose karke WhatsApp par bhejein. Clinic 10 minute me confirm karega."
+        },
+        {
+          "q": "Kya walk-in allowed hai?",
+          "a": "Haan, par booked patients ko priority milti hai."
+        },
+        {
+          "q": "Report kab milegi?",
+          "a": "Most reports same day, WhatsApp par PDF."
+        }
+      ]
+    },
+    "salon": {
+      "id": "salon",
+      "name": "Salon / Spa",
+      "label": "Salon",
+      "demoName": "Glow Studio Salon",
+      "tagline": "Hair, skin aur bridal — appointment par.",
+      "hero": "Aapka slot ready hai. Bas naam batao.",
+      "accent": "#e473a5",
+      "accentDark": "#a72e63",
+      "mode": "appointment",
+      "cta": "Slot book karein",
+      "fulfilmentLabel": "Appointment time",
+      "addressLabel": "Home service address (optional)",
+      "rating": "4.7",
+      "reviews": "240+",
+      "ordersLabel": "appointments",
+      "categories": [
+        {
+          "id": "hair",
+          "label": "Hair"
+        },
+        {
+          "id": "skin",
+          "label": "Skin"
+        },
+        {
+          "id": "nails",
+          "label": "Nails"
+        },
+        {
+          "id": "bridal",
+          "label": "Bridal"
+        }
+      ],
+      "items": [
+        {
+          "id": "haircut",
+          "name": "Haircut & Styling",
+          "unit": "1 session",
+          "price": 250,
+          "category": "hair",
+          "emoji": "✂️",
+          "badge": "Bestseller",
+          "stock": 15,
+          "tags": [
+            "haircut",
+            "styling"
+          ]
+        },
+        {
+          "id": "beard",
+          "name": "Beard Trim & Shape",
+          "unit": "1 session",
+          "price": 150,
+          "category": "hair",
+          "emoji": "🪒",
+          "stock": 15,
+          "tags": [
+            "beard",
+            "trim"
+          ]
+        },
+        {
+          "id": "facial",
+          "name": "Glow Facial",
+          "unit": "60 min",
+          "price": 899,
+          "mrp": 1100,
+          "category": "skin",
+          "emoji": "✨",
+          "badge": "Bestseller",
+          "stock": 8,
+          "tags": [
+            "facial",
+            "glow"
+          ]
+        },
+        {
+          "id": "spa",
+          "name": "Hair Spa",
+          "unit": "45 min",
+          "price": 1200,
+          "category": "hair",
+          "emoji": "💆",
+          "stock": 6,
+          "tags": [
+            "spa",
+            "hair"
+          ]
+        },
+        {
+          "id": "wax",
+          "name": "Full Arms Waxing",
+          "unit": "1 session",
+          "price": 600,
+          "category": "skin",
+          "emoji": "🧴",
+          "stock": 10,
+          "tags": [
+            "wax",
+            "arms"
+          ]
+        },
+        {
+          "id": "mani",
+          "name": "Manicure + Pedicure",
+          "unit": "combo",
+          "price": 800,
+          "category": "nails",
+          "emoji": "💅",
+          "stock": 8,
+          "tags": [
+            "mani",
+            "pedi",
+            "nails"
+          ]
+        },
+        {
+          "id": "bridal",
+          "name": "Bridal Package",
+          "unit": "full day",
+          "price": 5999,
+          "mrp": 7999,
+          "category": "bridal",
+          "emoji": "👰",
+          "badge": "Premium",
+          "stock": 3,
+          "tags": [
+            "bridal",
+            "wedding"
+          ]
+        },
+        {
+          "id": "kids",
+          "name": "Kids Haircut",
+          "unit": "1 session",
+          "price": 200,
+          "category": "hair",
+          "emoji": "🧒",
+          "stock": 12,
+          "tags": [
+            "kids",
+            "haircut"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Monthly grooming",
+          "price": 1999,
+          "desc": "2 haircuts + 1 facial, har mahine."
+        },
+        {
+          "name": "Bridal makeup",
+          "price": 7999,
+          "desc": "Trial + wedding day, home service."
+        },
+        {
+          "name": "Membership",
+          "price": 4999,
+          "desc": "6 months, 15% off all services."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Home service available hai?",
+          "a": "Haan, select services ke liye. Address daalein, extra charge slot par confirm hoga."
+        },
+        {
+          "q": "Cancellation policy?",
+          "a": "2 ghante pehle tak free. Uske baad 25% charge."
+        },
+        {
+          "q": "Bridal trial included hai?",
+          "a": "Bridal package me ek trial session included hai."
+        }
+      ]
+    },
+    "coaching": {
+      "id": "coaching",
+      "name": "Coaching / Classes",
+      "label": "Coaching",
+      "demoName": "Vidya Coaching Centre",
+      "tagline": "School, competitive aur skills — chhote batches.",
+      "hero": "Seat limited hai. Demo class free.",
+      "accent": "#8b5cf6",
+      "accentDark": "#5b21b6",
+      "mode": "enrollment",
+      "cta": "Seat book karein",
+      "fulfilmentLabel": "Batch start",
+      "addressLabel": "Student address / mode",
+      "rating": "4.8",
+      "reviews": "150+",
+      "ordersLabel": "enrollments",
+      "categories": [
+        {
+          "id": "foundation",
+          "label": "Foundation"
+        },
+        {
+          "id": "school",
+          "label": "School"
+        },
+        {
+          "id": "competitive",
+          "label": "Competitive"
+        },
+        {
+          "id": "skills",
+          "label": "Skills"
+        }
+      ],
+      "items": [
+        {
+          "id": "demo",
+          "name": "Demo Class",
+          "unit": "1 session",
+          "price": 0,
+          "category": "foundation",
+          "emoji": "🎓",
+          "badge": "Free",
+          "stock": 30,
+          "tags": [
+            "demo",
+            "trial"
+          ]
+        },
+        {
+          "id": "foundation",
+          "name": "Foundation Batch",
+          "unit": "per month",
+          "price": 4999,
+          "category": "foundation",
+          "emoji": "🧱",
+          "badge": "Bestseller",
+          "stock": 12,
+          "tags": [
+            "foundation",
+            "batch"
+          ]
+        },
+        {
+          "id": "maths10",
+          "name": "Class 10 Maths",
+          "unit": "per month",
+          "price": 3500,
+          "category": "school",
+          "emoji": "📐",
+          "stock": 15,
+          "tags": [
+            "maths",
+            "class10"
+          ]
+        },
+        {
+          "id": "science12",
+          "name": "Class 12 Science",
+          "unit": "per month",
+          "price": 4500,
+          "category": "school",
+          "emoji": "🔬",
+          "stock": 15,
+          "tags": [
+            "science",
+            "class12"
+          ]
+        },
+        {
+          "id": "neet",
+          "name": "NEET Crash Course",
+          "unit": "3 months",
+          "price": 24999,
+          "mrp": 29999,
+          "category": "competitive",
+          "emoji": "🩺",
+          "badge": "Popular",
+          "stock": 8,
+          "tags": [
+            "neet",
+            "medical"
+          ]
+        },
+        {
+          "id": "english",
+          "name": "Spoken English",
+          "unit": "per month",
+          "price": 2999,
+          "category": "skills",
+          "emoji": "🗣️",
+          "stock": 20,
+          "tags": [
+            "english",
+            "spoken"
+          ]
+        },
+        {
+          "id": "tests",
+          "name": "Test Series",
+          "unit": "10 tests",
+          "price": 999,
+          "category": "competitive",
+          "emoji": "📝",
+          "stock": 40,
+          "tags": [
+            "test",
+            "mock"
+          ]
+        },
+        {
+          "id": "doubt",
+          "name": "Doubt Session",
+          "unit": "1 session",
+          "price": 199,
+          "category": "school",
+          "emoji": "❓",
+          "stock": 25,
+          "tags": [
+            "doubt",
+            "help"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Full-year school batch",
+          "price": 34999,
+          "desc": "All subjects, tests, parent reports."
+        },
+        {
+          "name": "NEET full course",
+          "price": 49999,
+          "desc": "11 months, daily practice, mentor."
+        },
+        {
+          "name": "Parent progress report",
+          "price": 0,
+          "desc": "Monthly WhatsApp report, free."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Demo class free hai?",
+          "a": "Haan. Ek demo class book karein, phir decide karein."
+        },
+        {
+          "q": "Fees monthly hai ya yearly?",
+          "a": "Dono options. Monthly me flexibility, yearly me discount."
+        },
+        {
+          "q": "Online batch available hai?",
+          "a": "Haan, recorded + live doubt sessions ke saath."
+        }
+      ]
+    },
+    "restaurant": {
+      "id": "restaurant",
+      "name": "Restaurant / Kitchen",
+      "label": "Restaurant",
+      "demoName": "Annapurna Kitchen",
+      "tagline": "Ghar jaisa khana, garam garam.",
+      "hero": "Aaj ka khana, 40 minute me.",
+      "accent": "#f97316",
+      "accentDark": "#b23c00",
+      "mode": "delivery",
+      "cta": "WhatsApp par order karein",
+      "fulfilmentLabel": "Delivery / pickup slot",
+      "addressLabel": "Delivery address",
+      "rating": "4.6",
+      "reviews": "410+",
+      "ordersLabel": "orders",
+      "categories": [
+        {
+          "id": "thali",
+          "label": "Thali & combos"
+        },
+        {
+          "id": "mains",
+          "label": "Mains"
+        },
+        {
+          "id": "breads",
+          "label": "Breads"
+        },
+        {
+          "id": "drinks",
+          "label": "Drinks"
+        },
+        {
+          "id": "desserts",
+          "label": "Desserts"
+        }
+      ],
+      "items": [
+        {
+          "id": "thali",
+          "name": "Veg Thali",
+          "unit": "1 plate",
+          "price": 180,
+          "category": "thali",
+          "emoji": "🍛",
+          "badge": "Bestseller",
+          "stock": 40,
+          "tags": [
+            "thali",
+            "veg"
+          ]
+        },
+        {
+          "id": "paneer",
+          "name": "Paneer Butter Masala",
+          "unit": "1 bowl",
+          "price": 260,
+          "category": "mains",
+          "emoji": "🍲",
+          "stock": 30,
+          "tags": [
+            "paneer",
+            "curry"
+          ]
+        },
+        {
+          "id": "naan",
+          "name": "Butter Naan",
+          "unit": "1 pc",
+          "price": 40,
+          "category": "breads",
+          "emoji": "🫓",
+          "stock": 80,
+          "tags": [
+            "naan",
+            "bread"
+          ]
+        },
+        {
+          "id": "biryani",
+          "name": "Veg Biryani",
+          "unit": "1 plate",
+          "price": 220,
+          "category": "mains",
+          "emoji": "🍚",
+          "badge": "Bestseller",
+          "stock": 25,
+          "tags": [
+            "biryani",
+            "rice"
+          ]
+        },
+        {
+          "id": "chole",
+          "name": "Chole Bhature",
+          "unit": "1 plate",
+          "price": 140,
+          "category": "thali",
+          "emoji": "🥘",
+          "stock": 30,
+          "tags": [
+            "chole",
+            "bhature"
+          ]
+        },
+        {
+          "id": "coffee",
+          "name": "Cold Coffee",
+          "unit": "300 ml",
+          "price": 120,
+          "category": "drinks",
+          "emoji": "🥤",
+          "stock": 35,
+          "tags": [
+            "coffee",
+            "cold"
+          ]
+        },
+        {
+          "id": "gulab",
+          "name": "Gulab Jamun",
+          "unit": "2 pc",
+          "price": 60,
+          "category": "desserts",
+          "emoji": "🍮",
+          "stock": 50,
+          "tags": [
+            "gulab",
+            "sweet"
+          ]
+        },
+        {
+          "id": "combo",
+          "name": "Family Combo",
+          "unit": "serves 4",
+          "price": 699,
+          "mrp": 820,
+          "category": "thali",
+          "emoji": "🍱",
+          "badge": "Value",
+          "stock": 15,
+          "tags": [
+            "combo",
+            "family"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Weekly tiffin",
+          "price": 1499,
+          "desc": "5 lunches, fixed menu, free delivery."
+        },
+        {
+          "name": "Party tray",
+          "price": 2499,
+          "desc": "Serves 10, 3 mains + breads + dessert."
+        },
+        {
+          "name": "Corporate lunch",
+          "price": 199,
+          "desc": "Per head, 10+ orders, invoice provided."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Kitna time lagta hai?",
+          "a": "Aapke sheher me 35–60 minute. Peak hours me thoda zyada."
+        },
+        {
+          "q": "Jain / no-onion food milta hai?",
+          "a": "Haan, order notes me likhein. Kitchen confirm karega."
+        },
+        {
+          "q": "Packaging charge hai?",
+          "a": "Nahi, price me included hai."
+        }
+      ]
+    },
+    "pharmacy": {
+      "id": "pharmacy",
+      "name": "Pharmacy / Medical",
+      "label": "Pharmacy",
+      "demoName": "MediPlus Pharmacy",
+      "tagline": "Medicine, devices aur wellness — verified.",
+      "hero": "Medicine chahiye? Prescription bhejein, delivery ghar par.",
+      "accent": "#0ea5a4",
+      "accentDark": "#046b6a",
+      "mode": "delivery",
+      "cta": "WhatsApp par order karein",
+      "fulfilmentLabel": "Delivery slot",
+      "addressLabel": "Delivery address",
+      "rating": "4.9",
+      "reviews": "260+",
+      "ordersLabel": "orders",
+      "categories": [
+        {
+          "id": "otc",
+          "label": "OTC"
+        },
+        {
+          "id": "wellness",
+          "label": "Wellness"
+        },
+        {
+          "id": "devices",
+          "label": "Devices"
+        },
+        {
+          "id": "personal",
+          "label": "Personal care"
+        }
+      ],
+      "items": [
+        {
+          "id": "paracetamol",
+          "name": "Paracetamol 500mg",
+          "unit": "strip of 10",
+          "price": 20,
+          "category": "otc",
+          "emoji": "💊",
+          "stock": 100,
+          "tags": [
+            "fever",
+            "pain"
+          ]
+        },
+        {
+          "id": "ors",
+          "name": "ORS Sachet",
+          "unit": "1 sachet",
+          "price": 25,
+          "category": "otc",
+          "emoji": "🧂",
+          "stock": 80,
+          "tags": [
+            "hydration",
+            "ors"
+          ]
+        },
+        {
+          "id": "d3",
+          "name": "Vitamin D3 60K",
+          "unit": "4 capsules",
+          "price": 180,
+          "category": "wellness",
+          "emoji": "☀️",
+          "stock": 30,
+          "tags": [
+            "vitamin",
+            "d3"
+          ]
+        },
+        {
+          "id": "bp",
+          "name": "BP Monitor",
+          "unit": "1 device",
+          "price": 1899,
+          "mrp": 2400,
+          "category": "devices",
+          "emoji": "🩺",
+          "badge": "Bestseller",
+          "stock": 6,
+          "tags": [
+            "bp",
+            "monitor"
+          ]
+        },
+        {
+          "id": "thermometer",
+          "name": "Digital Thermometer",
+          "unit": "1 device",
+          "price": 250,
+          "category": "devices",
+          "emoji": "🌡️",
+          "stock": 14,
+          "tags": [
+            "thermometer",
+            "fever"
+          ]
+        },
+        {
+          "id": "firstaid",
+          "name": "First Aid Kit",
+          "unit": "1 kit",
+          "price": 450,
+          "category": "wellness",
+          "emoji": "🧰",
+          "stock": 10,
+          "tags": [
+            "firstaid",
+            "kit"
+          ]
+        },
+        {
+          "id": "sanitiser",
+          "name": "Hand Sanitiser",
+          "unit": "500 ml",
+          "price": 99,
+          "category": "personal",
+          "emoji": "🧴",
+          "stock": 40,
+          "tags": [
+            "sanitiser",
+            "hygiene"
+          ]
+        },
+        {
+          "id": "syrup",
+          "name": "Cough Syrup",
+          "unit": "100 ml",
+          "price": 120,
+          "category": "otc",
+          "emoji": "🍯",
+          "stock": 22,
+          "tags": [
+            "cough",
+            "syrup"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Monthly medicine refill",
+          "price": 999,
+          "desc": "Prescription upload, monthly delivery."
+        },
+        {
+          "name": "Home delivery",
+          "price": 0,
+          "desc": "₹199+ par free, same-day."
+        },
+        {
+          "name": "Device demo",
+          "price": 0,
+          "desc": "BP monitor / glucometer demo at shop."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Prescription chahiye?",
+          "a": "Scheduled medicines ke liye haan. WhatsApp par photo bhejein."
+        },
+        {
+          "q": "Genuine medicine hai?",
+          "a": "Haan, licensed pharmacy, batch aur expiry bill par."
+        },
+        {
+          "q": "Return policy?",
+          "a": "Sealed, non-scheduled items 7 din me return."
+        }
+      ]
+    },
+    "distributor": {
+      "id": "distributor",
+      "name": "Distributor / B2B",
+      "label": "Distributor",
+      "demoName": "Sharma Distributors",
+      "tagline": "Bulk supply, route delivery, credit terms.",
+      "hero": "Dukaan ka stock, ek hi call par.",
+      "accent": "#6b7280",
+      "accentDark": "#374151",
+      "mode": "order",
+      "cta": "Quote request bhejein",
+      "fulfilmentLabel": "Delivery date",
+      "addressLabel": "Shop / billing address",
+      "rating": "4.7",
+      "reviews": "90+",
+      "ordersLabel": "orders",
+      "categories": [
+        {
+          "id": "staples",
+          "label": "Staples"
+        },
+        {
+          "id": "fmcg",
+          "label": "FMCG"
+        },
+        {
+          "id": "beverages",
+          "label": "Beverages"
+        },
+        {
+          "id": "household",
+          "label": "Household"
+        }
+      ],
+      "items": [
+        {
+          "id": "atta50",
+          "name": "Atta 50kg Bag",
+          "unit": "1 bag",
+          "price": 2350,
+          "category": "staples",
+          "emoji": "🌾",
+          "badge": "Bestseller",
+          "stock": 60,
+          "tags": [
+            "atta",
+            "bulk"
+          ]
+        },
+        {
+          "id": "oil15",
+          "name": "Sunflower Oil 15L Tin",
+          "unit": "1 tin",
+          "price": 2150,
+          "category": "staples",
+          "emoji": "🌻",
+          "stock": 40,
+          "tags": [
+            "oil",
+            "bulk"
+          ]
+        },
+        {
+          "id": "sugar50",
+          "name": "Sugar 50kg",
+          "unit": "1 bag",
+          "price": 2450,
+          "category": "staples",
+          "emoji": "🍬",
+          "stock": 35,
+          "tags": [
+            "sugar",
+            "bulk"
+          ]
+        },
+        {
+          "id": "tea5",
+          "name": "Tea 5kg Pack",
+          "unit": "1 pack",
+          "price": 1800,
+          "category": "beverages",
+          "emoji": "🍵",
+          "stock": 25,
+          "tags": [
+            "tea",
+            "bulk"
+          ]
+        },
+        {
+          "id": "detergent",
+          "name": "Detergent Carton",
+          "unit": "24 pcs",
+          "price": 1440,
+          "category": "household",
+          "emoji": "🧼",
+          "stock": 20,
+          "tags": [
+            "detergent",
+            "carton"
+          ]
+        },
+        {
+          "id": "biscuit",
+          "name": "Biscuit Carton",
+          "unit": "48 pcs",
+          "price": 960,
+          "category": "fmcg",
+          "emoji": "🍪",
+          "stock": 30,
+          "tags": [
+            "biscuit",
+            "carton"
+          ]
+        },
+        {
+          "id": "salt24",
+          "name": "Salt 24-Pack",
+          "unit": "24 pcs",
+          "price": 672,
+          "category": "staples",
+          "emoji": "🧂",
+          "stock": 45,
+          "tags": [
+            "salt",
+            "pack"
+          ]
+        },
+        {
+          "id": "rice25",
+          "name": "Rice 25kg",
+          "unit": "1 bag",
+          "price": 1550,
+          "category": "staples",
+          "emoji": "🍚",
+          "stock": 28,
+          "tags": [
+            "rice",
+            "bulk"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Route delivery",
+          "price": 0,
+          "desc": "Weekly route, fixed day per area."
+        },
+        {
+          "name": "Credit terms 15 days",
+          "price": 0,
+          "desc": "Verified shops ke liye."
+        },
+        {
+          "name": "Monthly supply plan",
+          "price": 49999,
+          "desc": "Forecast-based auto-replenishment."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Minimum order kitna hai?",
+          "a": "₹5,000 per order. Route delivery free hai."
+        },
+        {
+          "q": "Credit milta hai?",
+          "a": "15-day credit verified shops ke liye, limit order history par."
+        },
+        {
+          "q": "GST bill milta hai?",
+          "a": "Haan, har order ke saath GST invoice."
+        }
+      ]
+    },
+    "boutique": {
+      "id": "boutique",
+      "name": "Boutique / Fashion",
+      "label": "Boutique",
+      "demoName": "Meera Boutique",
+      "tagline": "Ready-to-wear aur custom stitching.",
+      "hero": "Naya design aaya hai. Dekh lo.",
+      "accent": "#c026d3",
+      "accentDark": "#86198f",
+      "mode": "delivery",
+      "cta": "Order / trial book karein",
+      "fulfilmentLabel": "Pickup / delivery slot",
+      "addressLabel": "Delivery address",
+      "rating": "4.8",
+      "reviews": "130+",
+      "ordersLabel": "orders",
+      "categories": [
+        {
+          "id": "kurta",
+          "label": "Kurta & suits"
+        },
+        {
+          "id": "saree",
+          "label": "Sarees"
+        },
+        {
+          "id": "lehenga",
+          "label": "Lehenga"
+        },
+        {
+          "id": "stitching",
+          "label": "Stitching"
+        }
+      ],
+      "items": [
+        {
+          "id": "kurta",
+          "name": "Cotton Kurta",
+          "unit": "1 pc",
+          "price": 899,
+          "mrp": 1099,
+          "category": "kurta",
+          "emoji": "👕",
+          "badge": "Bestseller",
+          "stock": 18,
+          "tags": [
+            "kurta",
+            "cotton"
+          ]
+        },
+        {
+          "id": "saree",
+          "name": "Silk Saree",
+          "unit": "1 pc",
+          "price": 4999,
+          "category": "saree",
+          "emoji": "🥻",
+          "stock": 8,
+          "tags": [
+            "saree",
+            "silk"
+          ]
+        },
+        {
+          "id": "lehenga",
+          "name": "Bridal Lehenga",
+          "unit": "1 pc",
+          "price": 12999,
+          "mrp": 15999,
+          "category": "lehenga",
+          "emoji": "👗",
+          "badge": "Premium",
+          "stock": 3,
+          "tags": [
+            "lehenga",
+            "bridal"
+          ]
+        },
+        {
+          "id": "blouse",
+          "name": "Blouse Stitching",
+          "unit": "1 pc",
+          "price": 450,
+          "category": "stitching",
+          "emoji": "🧵",
+          "stock": 20,
+          "tags": [
+            "blouse",
+            "stitching"
+          ]
+        },
+        {
+          "id": "alteration",
+          "name": "Alteration",
+          "unit": "1 pc",
+          "price": 150,
+          "category": "stitching",
+          "emoji": "✂️",
+          "stock": 30,
+          "tags": [
+            "alteration",
+            "fit"
+          ]
+        },
+        {
+          "id": "dupatta",
+          "name": "Handloom Dupatta",
+          "unit": "1 pc",
+          "price": 599,
+          "category": "kurta",
+          "emoji": "🧣",
+          "stock": 15,
+          "tags": [
+            "dupatta",
+            "handloom"
+          ]
+        },
+        {
+          "id": "frock",
+          "name": "Kids Frock",
+          "unit": "1 pc",
+          "price": 749,
+          "category": "kurta",
+          "emoji": "👧",
+          "stock": 12,
+          "tags": [
+            "kids",
+            "frock"
+          ]
+        },
+        {
+          "id": "suit",
+          "name": "Custom Suit",
+          "unit": "1 set",
+          "price": 3499,
+          "category": "stitching",
+          "emoji": "🪡",
+          "stock": 6,
+          "tags": [
+            "suit",
+            "custom"
+          ]
+        }
+      ],
+      "services": [
+        {
+          "name": "Bridal consultation",
+          "price": 999,
+          "desc": "Design, fabric aur fitting session."
+        },
+        {
+          "name": "Bulk uniform order",
+          "price": 29999,
+          "desc": "50+ pieces, school / office."
+        },
+        {
+          "name": "Home measurement",
+          "price": 299,
+          "desc": "Ghar par measurement, select areas."
+        }
+      ],
+      "faqs": [
+        {
+          "q": "Custom stitching me kitna time lagta hai?",
+          "a": "Simple 5–7 din, bridal 3–4 hafte."
+        },
+        {
+          "q": "Trial available hai?",
+          "a": "Haan, ready-to-wear ke liye shop par trial free."
+        },
+        {
+          "q": "Return / exchange?",
+          "a": "Ready-to-wear 7 din me exchange. Custom orders par nahi."
+        }
+      ]
+    }
+  }
+};

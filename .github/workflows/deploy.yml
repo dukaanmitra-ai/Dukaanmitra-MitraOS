@@ -1,0 +1,156 @@
+name: DukaanMitra Cloud-Native Deployment
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Test and Build
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Core Engine dependencies
+        run: |
+          cd apps/core-engine
+          npm ci
+
+      - name: Install MitraOS dependencies
+        run: |
+          cd apps/mitra-os-web
+          npm ci
+
+      - name: Install Dukaan.in dependencies
+        run: |
+          cd apps/dukaan-in-next
+          npm ci
+
+      - name: Install Python dependencies
+        run: |
+          cd apps/ai-services
+          pip install -r requirements.txt
+
+      - name: Build Core Engine
+        run: |
+          cd apps/core-engine
+          npm run build
+
+      - name: Build MitraOS
+        run: |
+          cd apps/mitra-os-web
+          npm run build
+
+      - name: Build Dukaan.in
+        run: |
+          cd apps/dukaan-in-next
+          npm run build
+
+      - name: Run Python tests
+        run: |
+          cd apps/ai-services
+          python -m pytest tests/ -v
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            apps/core-engine/dist
+            apps/mitra-os-web/dist
+            apps/dukaan-in-next/.next
+
+  # Deploy to Render
+  deploy-render:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Render
+        uses: bobheadxi/deploy-render@v1.2.2
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+          wait-for-success: true
+
+  # Deploy to Vercel (Frontend)
+  deploy-vercel:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy MitraOS to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_MITRAOS }}
+          vercel-args: '--prod'
+          working-directory: ./apps/mitra-os-web
+
+      - name: Deploy Dukaan.in to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_DUKAANIN }}
+          vercel-args: '--prod'
+          working-directory: ./apps/dukaan-in-next
+
+  # Docker Build and Push
+  docker-build:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

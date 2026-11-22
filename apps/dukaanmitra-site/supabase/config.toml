@@ -1,0 +1,8 @@
+# Minimal Supabase CLI config for this standalone site.
+# `supabase link --project-ref <your-ref>` will add the project ref.
+project_id = "dukaanmitra"
+
+[functions.chat]
+# The browser sends the public anon key as a Bearer token, so JWT
+# verification stays on. Never disable this in production.
+verify_jwt = true

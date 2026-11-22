@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://mitra-system.vercel.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://mitra-system.vercel.app/demos/index.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/index.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/index.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/apps/business-runner/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/apps/storemitra-site/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/apps/dukaanmitra-site/</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/kanpur.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/lucknow.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/delhi.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/mumbai.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/bengaluru.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/hyderabad.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/london.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/dubai.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/cities/newyork.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/kirana.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/clinic.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/salon.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/coaching.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/restaurant.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/pharmacy.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/distributor.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://mitra-system.vercel.app/business/boutique.html</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+</urlset>

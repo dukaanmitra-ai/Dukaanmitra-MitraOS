@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DukaanMitra — Har chhoti dukaan ke paas apna AI</title>
+<meta name="description" content="WhatsApp catalogue, AI replies, orders aur appointments — ek hi system me. Kanpur se London tak. Bina website likhe, bina inventory rakhe." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="DukaanMitra" />
+<meta property="og:title" content="DukaanMitra — Har chhoti dukaan ke paas apna AI" />
+<meta property="og:description" content="WhatsApp catalogue, AI replies, orders aur appointments — ek hi system me. Kanpur se shuru, phir Delhi, London, Dubai, New York." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="DukaanMitra — Har chhoti dukaan ke paas apna AI" />
+<meta name="twitter:description" content="WhatsApp catalogue, AI replies, orders aur appointments — ek hi system me." />
+<meta name="theme-color" content="#f6f2f8" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- tokens ---------- */
+  :root{
+    --bg:#f6f2f8;
+    --bg-soft:#fbf8fd;
+    --ink:#171225;
+    --ink-2:#2c2340;
+    --muted:#6f657c;
+    --line:rgba(23,18,37,.1);
+    --line-strong:rgba(23,18,37,.16);
+    --card:rgba(255,255,255,.72);
+    --white:#fff;
+    --pink:#e473a5;
+    --violet:#8b5cf6;
+    --blue:#6ec6ff;
+    --grad:linear-gradient(115deg,#e473a5 0%,#8b5cf6 52%,#6ec6ff 100%);
+    --green:#25d366;
+    --green-dark:#128c4a;
+    --shadow-sm:0 2px 10px rgba(23,18,37,.05);
+    --shadow:0 18px 50px rgba(23,18,37,.1);
+    --shadow-lg:0 34px 90px rgba(23,18,37,.16);
+    --r-sm:14px;
+    --r:20px;
+    --r-lg:28px;
+    --max:1120px;
+    --ease:cubic-bezier(.2,.7,.2,1);
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:Inter,"Noto Sans Devanagari",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-size:16px;line-height:1.6;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;max-width:100%}
+  a{color:inherit}
+  button,input,select{font:inherit;color:inherit}
+  button{cursor:pointer}
+  h1,h2,h3,h4{font-family:Sora,"Noto Sans Devanagari",Inter,sans-serif;line-height:1.1;letter-spacing:-.03em;margin:0}
+  p{margin:0}
+  ::selection{background:rgba(139,92,246,.22)}
+  :focus-visible{outline:2px solid var(--violet);outline-offset:3px;border-radius:6px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+  .skip{position:fixed;left:16px;top:-60px;z-index:200;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;text-decoration:none;transition:top .2s}
+  .skip:focus{top:16px}
+
+  /* ---------- progress + header ---------- */
+  #progress{position:fixed;inset:0 auto auto 0;height:3px;width:0;background:var(--grad);z-index:120;transition:width .08s linear}
+  .site-header{
+    position:fixed;inset:0 0 auto 0;z-index:110;
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:14px clamp(16px,4vw,40px);
+    background:rgba(246,242,248,.78);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border-bottom:1px solid transparent;
+    transition:border-color .25s,background .25s;
+  }
+  .site-header.scrolled{border-bottom-color:var(--line);background:rgba(246,242,248,.92)}
+  .brand{display:inline-flex;align-items:center;gap:11px;text-decoration:none;font-family:Sora,sans-serif;font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .brand-mark{
+    width:38px;height:38px;border-radius:50%;background:var(--grad);
+    display:grid;place-items:center;gap:3px;grid-auto-flow:column;
+    box-shadow:0 8px 22px rgba(139,92,246,.32);
+  }
+  .brand-mark i{width:4px;height:4px;border-radius:50%;background:#fff;animation:dot 1.3s infinite}
+  .brand-mark i:nth-child(2){animation-delay:.18s}
+  .brand-mark i:nth-child(3){animation-delay:.36s}
+  @keyframes dot{0%,75%,100%{opacity:.35;transform:translateY(0)}35%{opacity:1;transform:translateY(-3px)}}
+  .nav{display:flex;align-items:center;gap:4px}
+  .nav a{
+    text-decoration:none;font-size:14px;font-weight:600;color:var(--ink-2);
+    padding:9px 13px;border-radius:999px;transition:background .2s,color .2s;
+  }
+  .nav a:hover{background:rgba(23,18,37,.06)}
+  .nav .nav-cta{background:var(--ink);color:#fff;padding:10px 18px;margin-left:6px}
+  .nav .nav-cta:hover{background:#2c2340}
+  .menu-btn{display:none;width:42px;height:42px;border:1px solid var(--line-strong);background:#fff;border-radius:12px;place-items:center}
+  .menu-btn span,.menu-btn span::before,.menu-btn span::after{display:block;width:16px;height:1.8px;background:var(--ink);content:"";position:relative;transition:transform .2s,opacity .2s}
+  .menu-btn span::before{position:absolute;top:-5px}
+  .menu-btn span::after{position:absolute;top:5px}
+
+  /* ---------- layout ---------- */
+  .wrap{width:min(var(--max),calc(100% - 40px));margin-inline:auto}
+  .section{padding:clamp(64px,9vw,118px) 0;position:relative}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:#7a4fd6;margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:18px;height:2px;background:var(--grad);border-radius:2px}
+  .section-head{max-width:720px;margin-bottom:clamp(34px,5vw,56px)}
+  .section-head h2{font-size:clamp(30px,4.6vw,52px);font-weight:700}
+  .section-head p{margin-top:16px;color:var(--muted);font-size:clamp(16px,1.5vw,18.5px);max-width:620px}
+  .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;padding:clamp(122px,15vw,160px) 0 clamp(40px,6vw,74px);overflow:hidden}
+  .hero::before{
+    content:"";position:absolute;inset:-20% -10% auto;height:820px;pointer-events:none;
+    background:
+      radial-gradient(46% 52% at 18% 34%,rgba(228,115,165,.26),transparent 70%),
+      radial-gradient(44% 50% at 84% 20%,rgba(110,198,255,.30),transparent 70%),
+      radial-gradient(52% 46% at 56% 78%,rgba(139,92,246,.18),transparent 72%);
+    filter:blur(6px);
+  }
+  .hero-grid{position:relative;display:grid;grid-template-columns:1.03fr .97fr;gap:clamp(32px,5vw,64px);align-items:center}
+  .hero h1{font-size:clamp(40px,5.7vw,72px);font-weight:800;letter-spacing:-.045em}
+  .hero h1 em{font-style:normal;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-lead{margin-top:22px;font-size:clamp(16.5px,1.7vw,19.5px);color:var(--muted);max-width:540px;line-height:1.65}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    border:1px solid transparent;border-radius:999px;text-decoration:none;
+    font-weight:700;font-size:15px;padding:14px 24px;transition:transform .18s var(--ease),box-shadow .18s,background .18s,border-color .18s;
+  }
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:var(--ink);color:#fff;box-shadow:0 12px 26px rgba(23,18,37,.18)}
+  .btn-primary:hover{background:#2a2038;box-shadow:0 16px 34px rgba(23,18,37,.24)}
+  .btn-wa{background:var(--green);color:#fff;box-shadow:0 12px 26px rgba(37,211,102,.3)}
+  .btn-wa:hover{background:#1fbe5b}
+  .btn-ghost{background:rgba(255,255,255,.72);border-color:var(--line-strong);color:var(--ink)}
+  .btn-ghost:hover{background:#fff;box-shadow:var(--shadow-sm)}
+  .btn-sm{padding:11px 18px;font-size:14px}
+  .hero-note{display:flex;align-items:center;gap:10px;margin-top:22px;font-size:13.5px;color:var(--muted)}
+  .avatars{display:flex}
+  .avatars span{width:26px;height:26px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:700}
+  .avatars span:first-child{margin-left:0}
+
+  /* ---------- chat demo ---------- */
+  .chat-card{
+    position:relative;background:rgba(255,255,255,.72);
+    border:1px solid rgba(255,255,255,.9);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    padding:16px;overflow:hidden;
+  }
+  .chat-card::after{content:"";position:absolute;inset:auto -30% -70% 20%;height:220px;background:radial-gradient(closest-side,rgba(139,92,246,.22),transparent);pointer-events:none}
+  .chat-top{display:flex;align-items:center;gap:12px;padding:4px 4px 13px;border-bottom:1px solid var(--line)}
+  .chat-avatar{width:42px;height:42px;border-radius:14px;background:var(--grad);color:#fff;display:grid;place-items:center;font-family:Sora,sans-serif;font-weight:800;font-size:14px;box-shadow:0 8px 18px rgba(139,92,246,.28)}
+  .chat-top b{display:block;font-size:14.5px;font-family:Sora,sans-serif;font-weight:700;line-height:1.3}
+  .chat-status{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:600;color:var(--green-dark)}
+  .chat-status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(37,211,102,.16)}
+  .chat-scroll{height:300px;overflow-y:auto;padding:16px 4px 8px;scrollbar-width:thin;scroll-behavior:smooth}
+  .msg{max-width:86%;padding:11px 14px;font-size:14px;line-height:1.5;margin-bottom:10px;animation:msgIn .35s var(--ease) both}
+  .msg.bot{background:#fff;border:1px solid var(--line);border-radius:16px 16px 16px 5px;box-shadow:var(--shadow-sm)}
+  .msg.user{background:var(--ink);color:#fff;border-radius:16px 16px 5px 16px;margin-left:auto}
+  @keyframes msgIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  .typing{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--line);padding:13px 16px;border-radius:16px 16px 16px 5px;margin-bottom:10px}
+  .typing i{width:5px;height:5px;border-radius:50%;background:#a79cb8;animation:dot 1.1s infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  .chat-form{display:flex;gap:8px;padding:4px}
+  .chat-form input{
+    flex:1;min-width:0;background:#fff;border:1px solid var(--line-strong);border-radius:999px;
+    padding:12px 16px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .chat-form input:focus{border-color:rgba(139,92,246,.6);box-shadow:0 0 0 4px rgba(139,92,246,.12)}
+  .chat-form button{width:46px;height:46px;flex:0 0 46px;border:0;border-radius:50%;background:var(--grad);color:#fff;display:grid;place-items:center;box-shadow:0 8px 18px rgba(139,92,246,.3);transition:transform .18s}
+  .chat-form button:hover{transform:scale(1.05)}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;padding:8px 4px 2px}
+  .quick button{background:rgba(255,255,255,.82);border:1px solid var(--line);border-radius:999px;padding:6px 11px;font-size:11.5px;font-weight:600;color:var(--ink-2);transition:background .18s,border-color .18s}
+  .quick button:hover{background:#fff;border-color:rgba(139,92,246,.4)}
+  .city-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding:4px}
+  .city-tabs button{
+    flex:1 1 auto;background:transparent;border:1px solid transparent;border-radius:12px;
+    padding:9px 12px;font-size:12.5px;font-weight:700;color:var(--muted);transition:all .18s;
+  }
+  .city-tabs button:hover{color:var(--ink);background:rgba(255,255,255,.6)}
+  .city-tabs button[aria-pressed="true"]{background:#fff;border-color:var(--line);color:var(--ink);box-shadow:var(--shadow-sm)}
+  .hero-caption{text-align:center;font-size:12.5px;color:var(--muted);margin-top:8px}
+
+  /* ---------- marquee strip ---------- */
+  .strip{border-block:1px solid var(--line);background:rgba(255,255,255,.4);overflow:hidden}
+  .strip-track{display:flex;gap:44px;width:max-content;padding:14px 0;animation:marquee 26s linear infinite}
+  .strip-track span{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--muted);white-space:nowrap}
+  .strip-track span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--grad)}
+  @keyframes marquee{to{transform:translateX(-50%)}}
+  .strip:hover .strip-track{animation-play-state:paused}
+
+  /* ---------- story ---------- */
+  .story{padding:clamp(78px,10vw,140px) 0;display:flex;justify-content:center}
+  .story-inner{width:min(860px,calc(100% - 40px));text-align:center}
+  .story h2{font-size:clamp(32px,5vw,60px);font-weight:700;letter-spacing:-.04em}
+  .story p{margin:22px auto 0;color:var(--muted);font-size:clamp(16.5px,1.8vw,20px);max-width:660px;line-height:1.7}
+  .story strong{color:var(--ink);font-weight:600}
+  .story .kicker{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--violet);margin-bottom:20px}
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .reveal.is-in{opacity:1;transform:none}
+
+  /* ---------- steps ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;counter-reset:step}
+  .step{
+    position:relative;background:var(--card);border:1px solid rgba(255,255,255,.85);
+    border-radius:var(--r-lg);padding:28px 24px;box-shadow:var(--shadow-sm);
+    transition:transform .25s var(--ease),box-shadow .25s;
+  }
+  .step:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+  .step-num{width:38px;height:38px;border-radius:12px;background:var(--grad);color:#fff;display:grid;place-items:center;font-family:Sora,sans-serif;font-weight:800;font-size:15px;margin-bottom:18px}
+  .step h3{font-size:18px;font-weight:700;margin-bottom:8px}
+  .step p{font-size:14.5px;color:var(--muted);line-height:1.6}
+  .step-tag{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7a4fd6}
+
+  /* ---------- dashboard preview ---------- */
+  .dash-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:18px;align-items:stretch}
+  .dash{
+    background:#171225;color:#fff;border-radius:var(--r-lg);padding:clamp(22px,3vw,32px);
+    box-shadow:var(--shadow-lg);position:relative;overflow:hidden;
+  }
+  .dash::before{content:"";position:absolute;inset:-40% -10% auto;height:280px;background:radial-gradient(closest-side,rgba(139,92,246,.35),transparent);pointer-events:none}
+  .dash-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;position:relative}
+  .dash-head h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
+  .dash-head p{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px}
+  .dash-pill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(37,211,102,.16);color:#6ff0a4;border:1px solid rgba(37,211,102,.28);white-space:nowrap}
+  .dash-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0 20px;position:relative}
+  .dash-stat{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px}
+  .dash-stat b{display:block;font-family:Sora,sans-serif;font-size:clamp(20px,2.4vw,26px);font-weight:700;letter-spacing:-.02em}
+  .dash-stat span{font-size:11px;color:rgba(255,255,255,.55)}
+  .dash-bars{position:relative}
+  .dash-bar-row{display:flex;justify-content:space-between;font-size:11.5px;color:rgba(255,255,255,.6);margin-bottom:6px}
+  .bar{height:7px;background:rgba(255,255,255,.12);border-radius:99px;overflow:hidden;margin-bottom:16px}
+  .bar i{display:block;height:100%;width:0;background:var(--grad);border-radius:99px;transition:width 1.1s var(--ease)}
+  .dash-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid rgba(255,255,255,.1);padding-top:16px;font-size:12px;color:rgba(255,255,255,.55);position:relative}
+  .dash-foot b{color:#fff}
+  .dash-side{display:grid;gap:16px}
+  .panel{
+    background:var(--card);border:1px solid rgba(255,255,255,.85);border-radius:var(--r-lg);
+    padding:24px;box-shadow:var(--shadow-sm);
+  }
+  .panel h3{font-size:17px;margin-bottom:10px}
+  .panel p{font-size:14px;color:var(--muted);line-height:1.65}
+  .panel ul{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:9px}
+  .panel li{display:flex;gap:9px;font-size:13.5px;color:var(--ink-2)}
+  .panel li::before{content:"";width:16px;height:16px;flex:0 0 16px;border-radius:50%;background:rgba(139,92,246,.14);box-shadow:inset 0 0 0 1px rgba(139,92,246,.22);margin-top:2px}
+  .panel li.check::before{background:rgba(37,211,102,.16);box-shadow:inset 0 0 0 1px rgba(37,211,102,.3)}
+
+  /* ---------- features ---------- */
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feature{
+    background:var(--card);border:1px solid rgba(255,255,255,.85);border-radius:var(--r);
+    padding:24px;box-shadow:var(--shadow-sm);transition:transform .25s var(--ease),box-shadow .25s;
+  }
+  .feature:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+  .ico{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:rgba(139,92,246,.1);color:#7a4fd6;margin-bottom:14px}
+  .ico svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .feature h3{font-size:16.5px;margin-bottom:7px}
+  .feature p{font-size:13.8px;color:var(--muted);line-height:1.6}
+  .feature .meta{display:inline-flex;gap:6px;margin-top:12px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a7f99}
+
+  /* ---------- pricing ---------- */
+  .pricing{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch}
+  .plan{
+    display:flex;flex-direction:column;background:var(--card);border:1px solid rgba(255,255,255,.85);
+    border-radius:var(--r-lg);padding:28px 24px;box-shadow:var(--shadow-sm);position:relative;
+  }
+  .plan.featured{background:#fff;border-color:rgba(139,92,246,.42);box-shadow:0 24px 60px rgba(139,92,246,.18)}
+  .plan-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;padding:5px 13px;border-radius:999px;white-space:nowrap;box-shadow:0 8px 18px rgba(139,92,246,.28)}
+  .plan h3{font-size:15px;font-weight:700;color:var(--ink-2)}
+  .plan .price{display:flex;align-items:baseline;gap:5px;margin:12px 0 6px}
+  .plan .price b{font-family:Sora,sans-serif;font-size:clamp(32px,4vw,42px);font-weight:800;letter-spacing:-.04em}
+  .plan .price span{font-size:13px;color:var(--muted);font-weight:600}
+  .plan .desc{font-size:13px;color:var(--muted);min-height:40px}
+  .plan ul{list-style:none;margin:18px 0 24px;padding:0;display:grid;gap:10px;font-size:13.5px;color:var(--ink-2)}
+  .plan li{display:flex;gap:8px;align-items:flex-start}
+  .plan li::before{content:"✓";color:var(--green-dark);font-weight:800;font-size:13px;line-height:1.5}
+  .plan .btn{margin-top:auto;width:100%;justify-content:center}
+  .pricing-note{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+
+  /* ---------- cities ---------- */
+  .cities-band{
+    position:relative;background:#171225;color:#fff;border-radius:var(--r-lg);
+    padding:clamp(32px,5vw,58px);overflow:hidden;
+  }
+  .cities-band::before{content:"";position:absolute;inset:auto -10% -60% 30%;height:420px;background:radial-gradient(closest-side,rgba(139,92,246,.35),transparent);pointer-events:none}
+  .cities-band h2{font-size:clamp(28px,4vw,44px);color:#fff}
+  .cities-band p{color:rgba(255,255,255,.62);margin-top:14px;max-width:560px;font-size:15.5px}
+  .city-list{display:flex;flex-wrap:wrap;gap:9px;margin-top:28px;position:relative}
+  .city-chip{border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.07);border-radius:999px;padding:10px 16px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+  .city-chip small{font-size:10.5px;color:rgba(255,255,255,.5);font-weight:600}
+  .city-chip.live{border-color:rgba(37,211,102,.5);background:rgba(37,211,102,.1);color:#8cf0b4}
+  .city-chip.live small{color:#6ff0a4}
+
+  /* ---------- faq ---------- */
+  .faq{max-width:780px;margin:0 auto;display:grid;gap:10px}
+  .faq details{background:var(--card);border:1px solid rgba(255,255,255,.85);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden}
+  .faq summary{
+    list-style:none;cursor:pointer;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    font-family:Sora,sans-serif;font-weight:600;font-size:14.8px;
+  }
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary::after{content:"+";font-size:20px;font-weight:400;color:var(--muted);transition:transform .2s}
+  .faq details[open] summary::after{transform:rotate(45deg)}
+  .faq p{padding:0 20px 20px;font-size:14px;color:var(--muted);line-height:1.65;max-width:660px}
+
+  /* ---------- waitlist ---------- */
+  .waitlist-card{
+    background:var(--card);border:1px solid rgba(255,255,255,.9);border-radius:var(--r-lg);
+    box-shadow:var(--shadow-lg);padding:clamp(26px,4.5vw,42px);
+    display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(26px,5vw,52px);align-items:center;
+  }
+  .waitlist-copy h2{font-size:clamp(28px,4vw,42px)}
+  .waitlist-copy p{color:var(--muted);margin-top:14px;font-size:15.5px;max-width:420px}
+  .waitlist-copy .perks{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:9px;font-size:13.5px;color:var(--ink-2)}
+  .waitlist-copy .perks li{display:flex;gap:8px}
+  .waitlist-copy .perks li::before{content:"✓";color:var(--green-dark);font-weight:800}
+  form.wait{display:grid;gap:12px}
+  .field{display:grid;gap:6px;text-align:left}
+  .field label{font-size:12px;font-weight:700;letter-spacing:.03em;color:var(--ink-2)}
+  .field input,.field select{
+    width:100%;background:rgba(255,255,255,.85);border:1px solid var(--line-strong);border-radius:12px;
+    padding:12px 14px;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s;
+  }
+  .field input:focus,.field select:focus{border-color:rgba(139,92,246,.6);box-shadow:0 0 0 4px rgba(139,92,246,.11)}
+  .field input::placeholder{color:#a49bb0}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  form.wait .btn{width:100%;justify-content:center;margin-top:2px}
+  .form-note{font-size:11.5px;color:var(--muted);text-align:center}
+  .form-success{
+    display:none;margin-top:4px;padding:12px 14px;border-radius:12px;background:rgba(37,211,102,.12);
+    border:1px solid rgba(37,211,102,.3);color:#0f7a41;font-size:13px;font-weight:600;text-align:center;
+  }
+  .form-success.show{display:block;animation:msgIn .35s var(--ease) both}
+
+  /* ---------- final cta ---------- */
+  .final-cta{text-align:center;padding:clamp(70px,10vw,120px) 0}
+  .final-cta h2{font-size:clamp(34px,5.4vw,62px);font-weight:800;letter-spacing:-.045em;max-width:820px;margin:0 auto}
+  .final-cta p{color:var(--muted);font-size:clamp(16px,1.8vw,19px);max-width:600px;margin:20px auto 0}
+  .final-cta .hero-actions{justify-content:center;margin-top:30px}
+
+  /* ---------- footer ---------- */
+  .site-footer{border-top:1px solid var(--line);padding:34px 0 44px;background:rgba(255,255,255,.35)}
+  .footer-inner{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px}
+  .footer-inner p{font-size:12.5px;color:var(--muted)}
+  .footer-links{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px}
+  .footer-links a{color:var(--muted);text-decoration:none}
+  .footer-links a:hover{color:var(--ink)}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .hero-grid{grid-template-columns:1fr;gap:38px}
+    .hero-lead{max-width:none}
+    .dash-grid{grid-template-columns:1fr}
+    .features{grid-template-columns:repeat(2,1fr)}
+    .waitlist-card{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr}
+  }
+  @media (max-width:760px){
+    .nav{position:fixed;inset:64px 12px auto;flex-direction:column;align-items:stretch;gap:4px;background:rgba(255,255,255,.96);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .22s var(--ease)}
+    .nav.open{opacity:1;visibility:visible;transform:none}
+    .nav a{padding:11px 14px;font-size:14.5px}
+    .nav .nav-cta{margin-left:0;text-align:center}
+    .menu-btn{display:grid}
+    .pricing{grid-template-columns:1fr}
+    .features{grid-template-columns:1fr}
+    .dash-stats{grid-template-columns:1fr 1fr}
+    .chat-scroll{height:260px}
+    .form-row{grid-template-columns:1fr}
+    .hero{padding-top:112px}
+    .footer-inner{flex-direction:column;align-items:flex-start}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div id="progress" aria-hidden="true"></div>
+
+<header class="site-header" id="siteHeader">
+  <a class="brand" href="#top" aria-label="DukaanMitra home">
+    <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+    DukaanMitra
+  </a>
+  <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span></button>
+  <nav class="nav" id="nav" aria-label="Main">
+    <a href="#how">Kaise kaam karta hai</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a class="nav-cta" href="#waitlist">Waitlist join karo</a>
+  </nav>
+</header>
+
+<main id="main">
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">AI × Hyperlocal × WhatsApp</span>
+        <h1>Aapki dukaan ke liye ek AI,<br />jo <em>har customer</em> se baat kare.</h1>
+        <p class="hero-lead">WhatsApp catalogue, AI replies, orders aur appointments — sab ek jagah. Bina aapko phone uthaye, bina website likhe, bina inventory rakhe.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#waitlist">Beta list karein</a>
+          <a class="btn btn-wa" href="#demo">Live demo dekhein</a>
+        </div>
+        <div class="hero-note">
+          <span class="avatars" aria-hidden="true"><span>K</span><span>D</span><span>L</span><span>U</span></span>
+          <span>Kanpur se shuru. Delhi, London, Dubai tak.</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="chat-card" id="demo">
+          <div class="chat-top">
+            <div class="chat-avatar" aria-hidden="true">DM</div>
+            <div style="flex:1;min-width:0">
+              <b id="shopName">Sharma Store, Kanpur</b>
+              <span class="chat-status" id="shopStatus">AI online — turant jawab</span>
+            </div>
+            <span style="font-size:11px;color:var(--muted);font-weight:600" id="langLabel">Hinglish</span>
+          </div>
+          <div class="chat-scroll" id="messages" role="log" aria-live="polite" aria-label="Chat demo">
+            <div class="msg bot">Hiii! Main Sharma Store ka AI hoon. Price, order ya timing — kuch bhi pucho.</div>
+          </div>
+          <form class="chat-form" id="chatForm" autocomplete="off">
+            <label class="sr-only" for="chatInput">Apna sawal likhein</label>
+            <input id="chatInput" placeholder="Jaise: 5kg atta ka rate batao" />
+            <button type="submit" aria-label="Send message">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+            </button>
+          </form>
+          <div class="quick" aria-label="Sample questions">
+            <button type="button" data-q="5kg atta ka rate batao">5kg atta rate?</button>
+            <button type="button" data-q="2 packet bhej do">Order karo</button>
+            <button type="button" data-q="Dukaan kab tak khuli hai?">Timing pucho</button>
+          </div>
+          <div class="city-tabs" id="cityTabs" role="group" aria-label="City demo">
+            <button type="button" data-city="kanpur" aria-pressed="true">🇮🇳 Kanpur</button>
+            <button type="button" data-city="delhi" aria-pressed="false">Delhi</button>
+            <button type="button" data-city="london" aria-pressed="false">🇬🇧 London</button>
+            <button type="button" data-city="dubai" aria-pressed="false">🇦🇪 Dubai</button>
+          </div>
+        </div>
+        <p class="hero-caption">Ek hi AI system — city badalte hi language, currency aur catalogue badal jata hai.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- STRIP -->
+  <div class="strip" aria-hidden="true">
+    <div class="strip-track">
+      <span>Kanpur</span><span>Hindi + Hinglish</span><span>₹ UPI</span><span>Delhi</span><span>English</span><span>£ Stripe</span><span>London</span><span>AED Card</span><span>Dubai</span><span>WhatsApp-first</span><span>Zero inventory</span>
+      <span>Kanpur</span><span>Hindi + Hinglish</span><span>₹ UPI</span><span>Delhi</span><span>English</span><span>£ Stripe</span><span>London</span><span>AED Card</span><span>Dubai</span><span>WhatsApp-first</span><span>Zero inventory</span>
+    </div>
+  </div>
+
+  <!-- STORY -->
+  <section class="story reveal">
+    <div class="story-inner">
+      <p class="kicker">The problem</p>
+      <h2>Hum sab online hain,<br />phir bhi chhoti dukaan offline hai.</h2>
+      <p>Customer WhatsApp karta hai, call karta hai, Instagram par message karta hai — aur dukaan wala busy hota hai. Reply late hota hai. Order chala jata hai.</p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <h2>Har din, ek missed message<br /><span class="grad-text">= ek lost customer.</span></h2>
+      <p>Har din hum texts, calls aur DMs navigate karte hain, sochte hue ki kya jawab dein — dukaan ke paas us sawal ka jawab dene ka time hi nahi hota.</p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <h2>Marketplaces ne sabko jod diya.</h2>
+      <p>Search ne bataya dukaan kahan hai. Map ne rasta dikhaya. Ads ne bada brand bechna sikhaya.</p>
+      <p><strong>Par kisi ne dukaan ko customer se baat karna nahi sikhaya.</strong></p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <p class="kicker">Our story</p>
+      <h2>Maine Kanpur ki galiyon me dekha —</h2>
+      <p>Dukaan wale ke paas sabse achha maal hai, sabse sahi daam hai. Bas ek cheez nahi hai: har message ka turant jawab dene wala koi nahi. Isi ek problem se poora commerce ruk jata hai.</p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <h2>Zindagi gali me hoti hai.<br />Mohalle me hoti hai.<br />Roz ki dukaan me hoti hai.</h2>
+      <p>Clinics, coaching centres, kirana stores, salons — yahi asli India hai, yahi asli commerce hai.</p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <p class="kicker">Our belief</p>
+      <h2>Agla shift technology ka nahi,<br /><span class="grad-text">local commerce intelligence</span> ka hai.</h2>
+      <p>Hum ek aur marketplace nahi bana rahe. Hum har chhote business ke paas pahuncha rahe hain — uska apna AI.</p>
+    </div>
+  </section>
+
+  <section class="story reveal">
+    <div class="story-inner">
+      <h2>Ek aur feed nahi.<br />Ek aur chatbot nahi.<br />Ek aur app nahi jo sirf bade shehron ke liye ho.</h2>
+      <p>Kyunki technology ka future sirf bade brands ko dekhna nahi hona chahiye.</p>
+      <p><strong>Uska future hai — asal local businesses ko asal customers ke kareeb lana.</strong></p>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section" id="how">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How it works</span>
+        <h2>3 steps me,<br />customer aapka ho jata hai.</h2>
+        <p>Owner ko kuch naya seekhna nahi hai. AI dukaan ke andar hi kaam karta hai — WhatsApp par, website par, ya dono par.</p>
+      </div>
+      <div class="steps">
+        <article class="step reveal">
+          <div class="step-num">1</div>
+          <h3>Customer message karta hai</h3>
+          <p>WhatsApp, website ya call — customer apni language me puchta hai: price, timing, order ya appointment.</p>
+          <span class="step-tag">No app download</span>
+        </article>
+        <article class="step reveal">
+          <div class="step-num">2</div>
+          <h3>AI jawab deta hai</h3>
+          <p>AI aapki catalogue se price, stock aur timing samajh ke turant Hindi / English / Urdu me jawab deta hai.</p>
+          <span class="step-tag">Aapki language, aapke daam</span>
+        </article>
+        <article class="step reveal">
+          <div class="step-num">3</div>
+          <h3>Order confirm, aapko alert</h3>
+          <p>Order ya appointment confirm ho jata hai. Aapko sirf notification milti hai — “Order #1024, ₹570, UPI link bheja gaya.”</p>
+          <span class="step-tag">Owner ko sirf final call</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Owner dashboard</span>
+        <h2>Aapko sirf ye dikhega.<br />Baaki AI sambhalega.</h2>
+      </div>
+      <div class="dash-grid">
+        <div class="dash reveal" id="dash">
+          <div class="dash-head">
+            <div>
+              <h3>Aaj ka summary — <span id="dashCity">Kanpur</span></h3>
+              <p>Live preview · demo data</p>
+            </div>
+            <span class="dash-pill">● AI active</span>
+          </div>
+          <div class="dash-stats">
+            <div class="dash-stat"><b id="statOrders">18</b><span>Orders aaj</span></div>
+            <div class="dash-stat"><b>42</b><span>AI ne solve kiye</span></div>
+            <div class="dash-stat"><b>0</b><span>Missed customers</span></div>
+          </div>
+          <div class="dash-bars">
+            <div class="dash-bar-row"><span>AI reply rate</span><span>96%</span></div>
+            <div class="bar"><i data-width="96%"></i></div>
+            <div class="dash-bar-row"><span>Pehle (manual reply)</span><span>61%</span></div>
+            <div class="bar"><i data-width="61%"></i></div>
+          </div>
+          <div class="dash-foot">
+            <span>Payment link bheja gaya — <b>UPI</b></span>
+            <span id="dashLocale">Hindi · ₹</span>
+          </div>
+        </div>
+        <div class="dash-side">
+          <div class="panel reveal">
+            <h3>Ek hi system, har city</h3>
+            <p>Template ek baar banao, city badal ke launch karo. Language, currency aur catalogue auto-switch ho jate hain.</p>
+            <ul>
+              <li class="check">Kanpur — Hindi + UPI + ₹</li>
+              <li class="check">London — English + Stripe + £</li>
+              <li class="check">Dubai — English/Arabic + AED</li>
+            </ul>
+          </div>
+          <div class="panel reveal">
+            <h3>Owner ke liye simple</h3>
+            <ul>
+              <li class="check">Naya order — WhatsApp alert</li>
+              <li class="check">Payment — link auto-share</li>
+              <li class="check">Stock khatam — AI politely mana kar de</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Features</span>
+        <h2>Dukaan chalane ke liye<br />jo zaroori hai. Bas wahi.</h2>
+        <p>Koi unnecessary dashboard nahi. Koi 40-page setup nahi. Sirf woh cheezein jo customer ko order tak le jayein.</p>
+      </div>
+      <div class="features">
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-8.5 8.5 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.6A8.4 8.4 0 1 1 21 11.5Z"/></svg></div>
+          <h3>WhatsApp-first AI</h3>
+          <p>Customer ko naya app nahi seekhna. Wahi WhatsApp, bas ab turant jawab aur order confirmation.</p>
+          <span class="meta">No app · No login</span>
+        </article>
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h7"/><circle cx="18" cy="17" r="3"/></svg></div>
+          <h3>Hinglish samajhta hai</h3>
+          <p>“Bhaiya 2 packet bhej do” aur “Do you deliver to Indiranagar?” — dono ka sahi jawab, same AI se.</p>
+          <span class="meta">Hindi · English · Urdu</span>
+        </article>
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 14 3-3 3 3 5-6"/></svg></div>
+          <h3>Orders + appointments</h3>
+          <p>Kirana ho ya clinic — AI order le sakta hai, slot book kar sakta hai, aur owner ko notify kar sakta hai.</p>
+          <span class="meta">Retail · Clinic · Coaching</span>
+        </article>
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h3>Local payments</h3>
+          <p>India me UPI/Razorpay, bahar Stripe. Payment link order ke saath hi chala jata hai.</p>
+          <span class="meta">UPI · Stripe · Razorpay</span>
+        </article>
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"/></svg></div>
+          <h3>Multi-city template</h3>
+          <p>Ek city me 50 dukaan chal gayi? Wahi template naye shehar me copy karo — bas locale aur currency badlo.</p>
+          <span class="meta">Kanpur → London → Dubai</span>
+        </article>
+        <article class="feature reveal">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v6c0 4.4 3.4 7.4 8 8 4.6-.6 8-3.6 8-8V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>Aapka data, aapka control</h3>
+          <p>Catalogue, prices aur customer chats aapke paas. Model badalna ho to badal do — AI engine plug-and-play hai.</p>
+          <span class="meta">Gemini · OpenRouter · Ollama</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Pricing</span>
+        <h2>Pehle 10 dukaanon ke liye<br />launch price.</h2>
+        <p>Setup free. Monthly me cancel kar sakte ho. Koi hidden “platform fee” nahi.</p>
+      </div>
+      <div class="pricing">
+        <article class="plan reveal">
+          <h3>Starter</h3>
+          <div class="price"><b>₹999</b><span>/month</span></div>
+          <p class="desc">Chhoti dukaan ke liye — WhatsApp AI + catalogue.</p>
+          <ul>
+            <li>WhatsApp AI replies</li>
+            <li>Catalogue + price list</li>
+            <li>1-page storefront</li>
+            <li>500 chats / month</li>
+          </ul>
+          <a class="btn btn-ghost btn-sm" href="#waitlist">Starter se shuru karo</a>
+        </article>
+        <article class="plan featured reveal">
+          <span class="plan-badge">Sabse popular</span>
+          <h3>Growth</h3>
+          <div class="price"><b>₹1,999</b><span>/month</span></div>
+          <p class="desc">Jo dukaan roz order leti hai — appointments + payments.</p>
+          <ul>
+            <li>Sab kuch Starter me se</li>
+            <li>Appointment booking</li>
+            <li>Payment link (UPI)</li>
+            <li>Unlimited chats</li>
+            <li>Local SEO starter</li>
+          </ul>
+          <a class="btn btn-primary btn-sm" href="#waitlist">Growth chahiye</a>
+        </article>
+        <article class="plan reveal">
+          <h3>Global</h3>
+          <div class="price"><b>$29</b><span>/month</span></div>
+          <p class="desc">London / Dubai / US — multi-city aur Stripe.</p>
+          <ul>
+            <li>Multi-city template</li>
+            <li>English + Arabic + Hindi</li>
+            <li>Stripe / card payments</li>
+            <li>Priority support</li>
+          </ul>
+          <a class="btn btn-ghost btn-sm" href="#waitlist">Global plan</a>
+        </article>
+      </div>
+      <p class="pricing-note">Launch offer pehle 10 businesses ke liye. Uske baad standard pricing.</p>
+    </div>
+  </section>
+
+  <!-- CITIES -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="cities-band reveal">
+        <span class="eyebrow" style="color:#c9b8ff">One system · many cities</span>
+        <h2>Kanpur se London tak.<br />Wahi AI, nayi zubaan.</h2>
+        <p>Har city ka apna catalogue, currency aur payment method. Naya shehar add karna = naya template copy karna, not rebuilding the product.</p>
+        <div class="city-list">
+          <span class="city-chip live">🇮🇳 Kanpur <small>Live · Hindi</small></span>
+          <span class="city-chip">Delhi <small>Next</small></span>
+          <span class="city-chip">🇬🇧 London <small>English · £</small></span>
+          <span class="city-chip">🇦🇪 Dubai <small>English · AED</small></span>
+          <span class="city-chip">New York <small>English · $</small></span>
+          <span class="city-chip">Lucknow <small>Hindi · ₹</small></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal" style="margin-inline:auto;text-align:center">
+        <span class="eyebrow" style="justify-content:center">FAQ</span>
+        <h2>Sawaal jo har dukaan wala puchta hai.</h2>
+      </div>
+      <div class="faq">
+        <details class="reveal">
+          <summary>Mujhe coding ya website banani aati nahi. Chalega?</summary>
+          <p>Haan. Setup hum karte hain. Aapko sirf apna product list, price aur timing dena hai. Baaki WhatsApp number aur storefront hum configure kar dete hain.</p>
+        </details>
+        <details class="reveal">
+          <summary>Customer ko naya app download karna padega?</summary>
+          <p>Nahi. Customer wahi WhatsApp use karta hai jo abhi use kar raha hai. Aapko bas apna business number connect karwana hai.</p>
+        </details>
+        <details class="reveal">
+          <summary>AI galat price ya galat jawab de de to?</summary>
+          <p>AI sirf aapki di hui catalogue se jawab deta hai. Jo cheez list me nahi hai, wo “owner ko bhej diya hai” bolke handover kar deta hai. Aap chahein to har reply approve karne ka mode bhi on kar sakte ho.</p>
+        </details>
+        <details class="reveal">
+          <summary>Hindi ke alawa aur languages?</summary>
+          <p>Haan — English, Hinglish aur Urdu built-in hain. Naya city add karte waqt locale set karte ho, AI usi language me reply karta hai.</p>
+        </details>
+        <details class="reveal">
+          <summary>Payment kaise hota hai?</summary>
+          <p>India me UPI/Razorpay, international me Stripe. Customer ko order ke saath payment link chala jata hai. Aap apne existing account se paisa receive karte ho.</p>
+        </details>
+        <details class="reveal">
+          <summary>Mera data kahan jata hai?</summary>
+          <p>Aapka catalogue aur chats aapke Supabase project me store hote hain. AI ke liye Gemini/OpenRouter use hota hai, aur aap kabhi bhi model badal sakte ho.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- WAITLIST -->
+  <section class="section" id="waitlist" style="padding-top:0">
+    <div class="wrap">
+      <div class="waitlist-card reveal">
+        <div class="waitlist-copy">
+          <span class="eyebrow">Join waitlist</span>
+          <h2>Apni dukaan ko<br />AI ready karo.</h2>
+          <p>Pehle 10 businesses ko free setup milega. Number do, hum WhatsApp par demo bhej denge — koi spam nahi.</p>
+          <ul class="perks">
+            <li>Free setup + catalogue import</li>
+            <li>Apni city aur language me demo</li>
+            <li>Launch price lock</li>
+          </ul>
+        </div>
+        <form class="wait" id="waitForm" novalidate>
+          <div class="form-row">
+            <div class="field">
+              <label for="wName">Naam</label>
+              <input id="wName" name="name" required placeholder="Aapka naam" />
+            </div>
+            <div class="field">
+              <label for="wCity">City</label>
+              <input id="wCity" name="city" required placeholder="Jaise: Kanpur" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="wType">Business type</label>
+            <select id="wType" name="business_type">
+              <option>Retail / Kirana Store</option>
+              <option>Clinic</option>
+              <option>Coaching Centre</option>
+              <option>Salon / Service</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="wPhone">WhatsApp number</label>
+            <input id="wPhone" name="whatsapp" type="tel" inputmode="tel" required placeholder="10-digit number" />
+          </div>
+          <button class="btn btn-wa" type="submit" id="waitBtn">Waitlist join karo →</button>
+          <p class="form-note">Demo site: lead local browser me save hoti hai jab tak Supabase connect nahi hota.</p>
+          <div class="form-success" id="formSuccess" role="status">✅ Done! Aap waitlist me ho. Hum 24 ghante me WhatsApp par demo bhej denge.</div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="final-cta">
+    <div class="wrap">
+      <h2>Har chhoti dukaan ke paas<br /><span class="grad-text">apna AI hona chahiye.</span></h2>
+      <p>Kanpur se shuru. Ek city, ek niche, ek WhatsApp number. Baaki playbook copy-paste hai.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#waitlist">Beta list karein</a>
+        <a class="btn btn-ghost" href="https://wa.me/916393741171?text=Hi%2C%20DukaanMitra%20ka%20demo%20dekhna%20hai" target="_blank" rel="noopener">WhatsApp par baat karein</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <div>
+      <a class="brand" href="#top" style="font-size:16px" aria-label="DukaanMitra home">
+        <span class="brand-mark" style="width:30px;height:30px" aria-hidden="true"><i></i><i></i><i></i></span>
+        DukaanMitra
+      </a>
+      <p style="margin-top:8px">Har chhoti dukaan ke paas apna AI. · Kanpur → London → Dubai → New York</p>
+    </div>
+    <div class="footer-links">
+      <a href="#how">Kaise kaam karta hai</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
+      <a href="#waitlist">Waitlist</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============ CONFIG (optional Supabase) ============
+     Fill these in after running supabase/schema.sql and deploying the
+     "chat" edge function. Until then the site runs on the scripted demo.
+  ==================================================== */
+  var CONFIG = {
+    supabaseUrl: "",        // e.g. "https://xxxx.supabase.co"
+    supabaseAnonKey: "",    // anon public key
+    useRealAI: false        // true only after the edge function is deployed
+  };
+
+  /* ---------- header / progress / menu ---------- */
+  var header = document.getElementById("siteHeader");
+  var progress = document.getElementById("progress");
+  var menuBtn = document.getElementById("menuBtn");
+  var nav = document.getElementById("nav");
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - doc.clientHeight;
+    progress.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + "%";
+    header.classList.toggle("scrolled", doc.scrollTop > 8);
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+
+  menuBtn.addEventListener("click", function () {
+    var open = nav.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", String(open));
+  });
+  nav.addEventListener("click", function (e) {
+    if (e.target.closest("a")) {
+      nav.classList.remove("open");
+      menuBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* ---------- scroll reveal ---------- */
+  var revealEls = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
+  if ("IntersectionObserver" in window && !reduceMotion) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-in");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: "0px 0px -8% 0px" });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add("is-in"); });
+  }
+
+  /* ---------- animate dashboard bars when visible ---------- */
+  var dash = document.getElementById("dash");
+  if (dash && "IntersectionObserver" in window) {
+    var dashIO = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        dash.querySelectorAll(".bar i").forEach(function (bar) {
+          bar.style.width = bar.getAttribute("data-width") || "0%";
+        });
+        dashIO.disconnect();
+      });
+    }, { threshold: 0.3 });
+    dashIO.observe(dash);
+  } else if (dash) {
+    dash.querySelectorAll(".bar i").forEach(function (bar) {
+      bar.style.width = bar.getAttribute("data-width") || "0%";
+    });
+  }
+
+  /* ---------- city data ---------- */
+  var CITIES = {
+    kanpur: {
+      name: "Sharma Store, Kanpur",
+      city: "Kanpur",
+      locale: "Hindi · ₹",
+      orders: 18,
+      lang: "Hinglish",
+      greet: "Hiii! Main Sharma Store ka AI hoon. Price, order ya timing — kuch bhi pucho.",
+      price: "5kg atta ₹285 hai sir. ₹499+ par Kanpur me free delivery hai.",
+      order: "Done! 2 packet confirm ho gaye. Order #1024, total ₹570. UPI payment link bhej diya hai.",
+      time: "Haan sir, dukaan subah 9 baje se raat 10 baje tak khuli hai.",
+      fallback: "Samajh gaya! Aapki baat dukaan owner tak bhej di hai. 5 minute me reply milega."
+    },
+    delhi: {
+      name: "Gupta Store, Delhi",
+      city: "Delhi",
+      locale: "Hindi · ₹",
+      orders: 24,
+      lang: "Hinglish",
+      greet: "Namaste! Main Gupta Store ki AI hoon. Rate, order ya timing — bataiye?",
+      price: "5kg atta ₹299 hai. Delhi me same-day delivery available hai.",
+      order: "Confirm ho gaya! Order #2041, total ₹598. Payment link share kar diya hai.",
+      time: "Dukaan roz subah 8 se raat 11 baje tak khuli hai.",
+      fallback: "Done! Owner ko notify kar diya hai, jaldi jawab aayega."
+    },
+    london: {
+      name: "Patel Store, London",
+      city: "London",
+      locale: "English · £",
+      orders: 31,
+      lang: "English",
+      greet: "Hi! I am Patel Store AI. Ask me about price, order or opening time.",
+      price: "5kg flour is £4.20. Free delivery in London over £20.",
+      order: "Done! Order #3091 confirmed, total £8.40. Stripe payment link sent.",
+      time: "Open daily 9am to 9pm.",
+      fallback: "Got it! I have passed your message to the owner."
+    },
+    dubai: {
+      name: "Al Noor Store, Dubai",
+      city: "Dubai",
+      locale: "English · AED",
+      orders: 27,
+      lang: "English",
+      greet: "Hello! I am Al Noor Store AI. How can I help you today?",
+      price: "5kg flour is AED 15. Free delivery in Dubai over AED 50.",
+      order: "Confirmed! Order #4112, total AED 30. Payment link sent.",
+      time: "Open daily 8am to 11pm.",
+      fallback: "Noted! The owner has been notified."
+    }
+  };
+
+  var current = "kanpur";
+  var history = [];
+  var busy = false;
+
+  var messagesEl = document.getElementById("messages");
+  var chatForm = document.getElementById("chatForm");
+  var chatInput = document.getElementById("chatInput");
+  var shopName = document.getElementById("shopName");
+  var langLabel = document.getElementById("langLabel");
+  var dashCity = document.getElementById("dashCity");
+  var dashLocale = document.getElementById("dashLocale");
+  var statOrders = document.getElementById("statOrders");
+
+  function addMsg(text, who) {
+    var el = document.createElement("div");
+    el.className = "msg " + who;
+    el.textContent = text;
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  function scriptedReply(q) {
+    var c = CITIES[current];
+    var s = q.toLowerCase();
+    if (s.indexOf("atta") > -1 || s.indexOf("flour") > -1 || s.indexOf("rate") > -1 || s.indexOf("price") > -1 || s.indexOf("kitna") > -1 || s.indexOf("daam") > -1) return c.price;
+    if (s.indexOf("order") > -1 || s.indexOf("bhej") > -1 || s.indexOf("packet") > -1 || s.indexOf("chahiye") > -1 || s.indexOf("deliver") > -1) return c.order;
+    if (s.indexOf("kab") > -1 || s.indexOf("time") > -1 || s.indexOf("khul") > -1 || s.indexOf("open") > -1 || s.indexOf("timing") > -1) return c.time;
+    return c.fallback;
+  }
+
+  function apiReply(q) {
+    if (!CONFIG.useRealAI || !CONFIG.supabaseUrl || !CONFIG.supabaseAnonKey) {
+      return Promise.resolve(null);
+    }
+    return fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/functions/v1/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": CONFIG.supabaseAnonKey,
+        "Authorization": "Bearer " + CONFIG.supabaseAnonKey
+      },
+      body: JSON.stringify({ city: current, messages: history })
+    }).then(function (res) {
+      if (!res.ok) throw new Error("chat request failed");
+      return res.json();
+    }).then(function (data) {
+      return data && data.reply ? data.reply : null;
+    }).catch(function () { return null; });
+  }
+
+  function reply(q) {
+    if (busy) return;
+    busy = true;
+    var typing = document.createElement("div");
+    typing.className = "typing";
+    typing.innerHTML = "<i></i><i></i><i></i>";
+    messagesEl.appendChild(typing);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    history.push({ role: "user", content: q });
+
+    apiReply(q).then(function (real) {
+      window.setTimeout(function () {
+        typing.remove();
+        var text = real || scriptedReply(q);
+        history.push({ role: "assistant", content: text });
+        addMsg(text, "bot");
+        busy = false;
+      }, reduceMotion ? 0 : 620);
+    });
+  }
+
+  function send(text, who) {
+    var value = String(text || "").trim();
+    if (!value || busy) return;
+    addMsg(value, who || "user");
+    reply(value);
+  }
+
+  chatForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var value = chatInput.value;
+    chatInput.value = "";
+    send(value, "user");
+  });
+
+  document.querySelectorAll(".quick button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      if (btn.getAttribute("data-q")) send(btn.getAttribute("data-q"), "user");
+    });
+  });
+
+  /* ---------- city switcher ---------- */
+  document.querySelectorAll("#cityTabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      current = btn.getAttribute("data-city");
+      var c = CITIES[current];
+      document.querySelectorAll("#cityTabs button").forEach(function (b) {
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+      shopName.textContent = c.name;
+      langLabel.textContent = c.lang;
+      if (dashCity) dashCity.textContent = c.city;
+      if (dashLocale) dashLocale.textContent = c.locale;
+      if (statOrders) statOrders.textContent = c.orders;
+      messagesEl.innerHTML = "";
+      history = [];
+      addMsg(c.greet, "bot");
+      chatInput.setAttribute("placeholder", current === "london" || current === "dubai" ? "Ask about price, order or timing" : "Jaise: 5kg atta ka rate batao");
+    });
+  });
+
+  /* ---------- waitlist ---------- */
+  var waitForm = document.getElementById("waitForm");
+  var waitBtn = document.getElementById("waitBtn");
+  var formSuccess = document.getElementById("formSuccess");
+
+  waitForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+    if (!waitForm.reportValidity()) return;
+    var data = {
+      name: waitForm.querySelector("#wName").value.trim(),
+      business_type: waitForm.querySelector("#wType").value,
+      city: waitForm.querySelector("#wCity").value.trim(),
+      whatsapp: waitForm.querySelector("#wPhone").value.trim(),
+      source: "website"
+    };
+
+    function done() {
+      formSuccess.classList.add("show");
+      waitBtn.textContent = "✅ Joined!";
+      waitBtn.disabled = true;
+      waitForm.querySelectorAll("input, select, button").forEach(function (el) { el.disabled = true; });
+      try { localStorage.setItem("dm_lead", JSON.stringify(data)); } catch (err) {}
+    }
+
+    if (!CONFIG.supabaseUrl || !CONFIG.supabaseAnonKey) {
+      done();
+      return;
+    }
+    fetch(CONFIG.supabaseUrl.replace(/\/$/, "") + "/rest/v1/waitlist", {
+      method: "POST",
+      headers: {
+        "apikey": CONFIG.supabaseAnonKey,
+        "Authorization": "Bearer " + CONFIG.supabaseAnonKey,
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal"
+      },
+      body: JSON.stringify(data)
+    }).then(function (res) {
+      if (!res.ok) throw new Error("insert failed");
+      done();
+    }).catch(function () {
+      done(); // never block the user
+    });
+  });
+})();
+</script>
+</body>
+</html>
