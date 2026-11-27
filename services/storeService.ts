@@ -1,55 +1,48 @@
-import { db } from '../firebase';
-import { writeBatch, doc, collection, query, where, getDocs, serverTimestamp, increment } from 'firebase/firestore';
-import { ParsedTransaction } from '../types';
+import { createLedgerEntry } from "./adapters/ledgerAdapter";
+import { AdapterError, type AuthSession } from "./adapters/types";
+import type { ParsedTransaction } from "../types";
 
-export const logTransaction = async (storeId: string, parsed: ParsedTransaction) => {
-  const batch = writeBatch(db);
-  const storeRef = doc(db, 'stores', storeId);
-  const transactionsRef = collection(storeRef, 'transactions');
-  const customersRef = collection(storeRef, 'customers');
-
-  let customerId = '';
-
-  if (parsed.customerName) {
-    // Find or create customer
-    const q = query(customersRef, where('name', '==', parsed.customerName));
-    const querySnapshot = await getDocs(q);
-    
-    let customerRef;
-    if (!querySnapshot.empty) {
-      customerRef = doc(customersRef, querySnapshot.docs[0].id);
-      customerId = customerRef.id;
-      batch.update(customerRef, {
-        balance: increment(parsed.type === 'udhaar' ? parsed.amount : parsed.type === 'payment' ? -parsed.amount : 0),
-        lastTransactionAt: serverTimestamp()
-      });
-    } else {
-      customerRef = doc(customersRef);
-      customerId = customerRef.id;
-      batch.set(customerRef, {
-        storeId,
-        name: parsed.customerName,
-        balance: parsed.type === 'udhaar' ? parsed.amount : parsed.type === 'payment' ? -parsed.amount : 0,
-        lastTransactionAt: serverTimestamp()
-      });
-    }
+/**
+ * Backward-compatible transaction logging facade.
+ *
+ * Delegates credit (`udhaar`) and payment (`payment`) entries to the verified
+ * `mvp1-aafa3` ledger adapter (`shops/{shopId}/ledger` + atomic `shops/{shopId}/customers`).
+ *
+ * Cash POS sales (`type: 'sale'`) are strictly NOT written into the credit ledger
+ * and must be routed through `coreEnginePosClient.recordCashSale()`.
+ */
+export const logTransaction = async (
+  shopId: string,
+  parsed: ParsedTransaction & { customerPhone?: string },
+  session?: AuthSession | null,
+) => {
+  if (parsed.type === "sale") {
+    throw new AdapterError(
+      "CASH_SALE_REQUIRES_POS_API",
+      'Cash sales ("sale") must be recorded through Core Engine POS API (coreEnginePosClient.recordCashSale), not Firestore credit ledger.',
+    );
   }
 
-  const newTxRef = doc(transactionsRef);
-  batch.set(newTxRef, {
-    storeId,
-    customerId,
-    type: parsed.type,
-    amount: parsed.amount,
-    description: parsed.description || '',
-    timestamp: serverTimestamp()
-  });
+  if (!parsed.customerPhone) {
+    throw new AdapterError(
+      "INVALID_INPUT",
+      "customerPhone is required to record an mvp1-aafa3 ledger entry.",
+    );
+  }
 
-  // Update store totals
-  batch.update(storeRef, {
-    totalSales: increment(parsed.type === 'sale' ? parsed.amount : 0),
-    totalUdhaar: increment(parsed.type === 'udhaar' ? parsed.amount : parsed.type === 'payment' ? -parsed.amount : 0)
-  });
-
-  await batch.commit();
+  return createLedgerEntry(
+    shopId,
+    {
+      customerPhone: parsed.customerPhone,
+      customerName: parsed.customerName,
+      amount: parsed.amount,
+      item:
+        ("items" in parsed && parsed.items) ||
+        parsed.description ||
+        "Saman",
+      type: parsed.type,
+      source: "app",
+    },
+    session,
+  );
 };

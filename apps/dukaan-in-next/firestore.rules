@@ -1,145 +1,299 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // =================================
-    // Helper Functions (Enterprise Optimized)
-    // =================================
+    // =========================================================================
+    // DukaanMitra MitraOS — Hardened Firestore Security Rules (mvp1-aafa3)
+    // Phase 3.2 Draft — DO NOT DEPLOY WITHOUT EXPLICIT DEPLOYMENT APPROVAL
+    // =========================================================================
+
+    // -------------------------------------------------------------------------
+    // Core Auth, Profile & Session Revocation Helpers (Firestore Rules v2)
+    // -------------------------------------------------------------------------
     function isAuthenticated() {
-      return request.auth != null;
+      return request.auth != null && request.auth.uid is string;
     }
 
-    // Centralized profile fetch to keep rules readable and performant
+    function userDocPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function userDocExists() {
+      return isAuthenticated() && exists(userDocPath(request.auth.uid));
+    }
+
     function getUserProfile() {
-      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return get(userDocPath(request.auth.uid)).data;
     }
 
-    function hasRole(role) {
-      return isAuthenticated() && getUserProfile().role == role;
+    // Enforces sessionRevokedAt: if present as a Timestamp, the Firebase ID
+    // token's auth_time (seconds) must be >= sessionRevokedAt.
+    function isSessionNotRevoked(profile) {
+      return !('sessionRevokedAt' in profile) ||
+        profile.sessionRevokedAt == null ||
+        (profile.sessionRevokedAt is timestamp &&
+          request.auth.token.auth_time is int &&
+          request.auth.token.auth_time * 1000 >= profile.sessionRevokedAt.toMillis());
     }
 
-    function isSuperAdmin() {
-      return hasRole('super_admin');
-    }
-    
-    function isFranchiseAdmin() {
-      return hasRole('franchise_admin');
+    function isActiveUser(profile) {
+      return profile.status == 'active' && isSessionNotRevoked(profile);
     }
 
-    function isOwner(userId) {
+    function isSelf(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isShopMember(shopId) {
-        if (!isAuthenticated()) return false;
-        let profile = getUserProfile();
-        return profile.status == 'active' &&
-               profile.shopId == shopId &&
-               (profile.role == 'owner' || profile.role == 'staff');
-    }
-    
-    function isShopOwner(shopId) {
-        if (!isAuthenticated()) return false;
-        let profile = getUserProfile();
-        return profile.status == 'active' &&
-               profile.shopId == shopId &&
-               profile.role == 'owner';
+    function isSuperAdmin() {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().role == 'super_admin';
     }
 
-    // =================================
+    function isFranchiseAdmin() {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().role == 'franchise_admin';
+    }
+
+    function isPlatformAdmin() {
+      return isSuperAdmin() || isFranchiseAdmin();
+    }
+
+    function isShopMember(shopId) {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().shopId is string &&
+        getUserProfile().shopId == shopId &&
+        (getUserProfile().role == 'owner' || getUserProfile().role == 'staff');
+    }
+
+    function isShopOwner(shopId) {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().shopId is string &&
+        getUserProfile().shopId == shopId &&
+        getUserProfile().role == 'owner' &&
+        exists(/databases/$(database)/documents/shops/$(shopId)) &&
+        get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+    }
+
+    function isShopOperational(shopId) {
+      return exists(/databases/$(database)/documents/shops/$(shopId)) &&
+        !(get(/databases/$(database)/documents/shops/$(shopId)).data.status in ['locked', 'suspended', 'cancelled', 'integrity_lock']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Schema & Field Validators
+    // -------------------------------------------------------------------------
+    function isValidUserSelfCreate(userId) {
+      let data = request.resource.data;
+      return isSelf(userId) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'role', 'status', 'shopId', 'createdAt', 'lastLogin', 'updated_at']) &&
+        data.uid == request.auth.uid &&
+        data.role == 'owner' &&
+        data.status == 'active' &&
+        (!('shopId' in data) || data.shopId == null);
+    }
+
+    function isValidUserSelfUpdate(userId) {
+      let diff = request.resource.data.diff(resource.data);
+      return isSelf(userId) &&
+        resource.data.status == 'active' &&
+        isSessionNotRevoked(resource.data) &&
+        !diff.affectedKeys().hasAny(['uid', 'role', 'status', 'shopId', 'sessionRevokedAt', 'createdAt']) &&
+        diff.affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLogin', 'updated_at']);
+    }
+
+    function isValidShopOwnerUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return resource.data.owner_id == request.auth.uid &&
+        request.resource.data.owner_id == resource.data.owner_id &&
+        !diff.affectedKeys().hasAny([
+          'id', 'owner_id', 'plan', 'status', 'mrr', 'paid_till',
+          'trial_ends_at', 'created_at', 'integrityStatus',
+          'lastVerifiedAt', 'ledgerRootHash', 'impact_metrics'
+        ]) &&
+        diff.affectedKeys().hasOnly([
+          'name', 'phone', 'whatsapp', 'owner_name',
+          'address', 'city', 'state', 'pincode', 'settings', 'updated_at'
+        ]) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() >= 2 &&
+        request.resource.data.name.size() <= 120;
+    }
+
+    function isValidCustomerCreate(shopId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'shop_id', 'phone', 'name', 'totalUdhaar', 'total_spent',
+          'visit_count', 'status', 'first_visit', 'last_visit',
+          'created_at', 'updated_at', 'reminderCount'
+        ]) &&
+        data.shop_id == shopId &&
+        data.phone is string &&
+        data.phone.size() >= 10 &&
+        data.phone.size() <= 16 &&
+        (!('name' in data) || (data.name is string && data.name.size() <= 120)) &&
+        (!('totalUdhaar' in data) || (data.totalUdhaar is number && data.totalUdhaar == 0)) &&
+        (!('total_spent' in data) || (data.total_spent is number && data.total_spent == 0)) &&
+        (!('visit_count' in data) || (data.visit_count is int && data.visit_count == 0));
+    }
+
+    // Customers cannot have balances mutated through profile updates;
+    // balance mutations must occur via trusted server Admin SDK ledger transactions.
+    function isValidCustomerProfileUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return !diff.affectedKeys().hasAny([
+          'shop_id', 'phone', 'totalUdhaar', 'total_spent',
+          'visit_count', 'lastPaymentDate', 'first_visit', 'created_at'
+        ]) &&
+        diff.affectedKeys().hasOnly([
+          'name', 'status', 'lastReminderSentAt', 'reminderCount', 'updated_at'
+        ]) &&
+        (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 120));
+    }
+
+    function isValidLedgerCreate(shopId) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['shop_id', 'customerPhone', 'amount', 'type', 'createdAt']) &&
+        data.keys().hasOnly([
+          'id', 'shop_id', 'actorId', 'customerPhone', 'customerName',
+          'amount', 'item', 'type', 'source', 'correlationId', 'createdAt'
+        ]) &&
+        data.shop_id == shopId &&
+        (!('actorId' in data) || data.actorId == request.auth.uid) &&
+        data.customerPhone is string &&
+        data.customerPhone.size() >= 10 &&
+        data.customerPhone.size() <= 16 &&
+        data.type in ['credit', 'payment'] &&
+        data.amount is number &&
+        data.amount > 0 &&
+        data.amount <= 10000000 &&
+        (!('item' in data) || (data.item is string && data.item.size() <= 240)) &&
+        (!('customerName' in data) || (data.customerName is string && data.customerName.size() <= 120)) &&
+        (!('source' in data) || data.source in ['app', 'manual', 'app-ai']);
+    }
+
+    // -------------------------------------------------------------------------
     // Public & System Collections
-    // =================================
+    // -------------------------------------------------------------------------
     match /posts/{postId} {
       allow read: if true;
-      allow update: if (request.resource.data.likes == resource.data.likes + 1 || request.resource.data.views == resource.data.views + 1) &&
-                      request.resource.data.diff(resource.data).affectedKeys().size() == 1;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().size() == 1 &&
+        ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+          request.resource.data.likes is int &&
+          request.resource.data.likes == resource.data.likes + 1) ||
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) &&
+          request.resource.data.views is int &&
+          request.resource.data.views == resource.data.views + 1));
       allow create, delete: if isSuperAdmin();
     }
 
     match /comments/{commentId} {
-        allow read: if true;
-        allow create: if isAuthenticated();
-        allow update, delete: if isSuperAdmin();
+      allow read: if true;
+      allow create: if isAuthenticated() &&
+        userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
     }
-    
+
     match /contactFormSubmissions/{submissionId} {
-        allow create: if true;
-        allow read, update, delete: if isSuperAdmin();
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'message', 'createdAt']) &&
+        request.resource.data.message is string &&
+        request.resource.data.message.size() > 0 &&
+        request.resource.data.message.size() <= 2000;
+      allow read, update, delete: if isSuperAdmin();
     }
-    
+
     match /interactions/{interactionId} {
-      allow write: if false; 
-      allow read: if isSuperAdmin() || isFranchiseAdmin();
+      allow read: if isPlatformAdmin();
+      allow write: if false;
     }
 
     match /logs/{logId} {
-      allow write: if false;
       allow read: if isSuperAdmin();
-    }
-    
-    match /auditLogs/{auditLogId} {
-        allow write: if false; // System only
-        allow read: if isSuperAdmin() || isFranchiseAdmin();
-    }
-    
-    match /notifications/{notificationId} {
-      allow write: if false;
-      allow read: if isSuperAdmin() || isShopMember(resource.data.shopId);
-    }
-    
-    match /metrics/{docId=**} {
-      allow read: if isSuperAdmin() || isFranchiseAdmin();
       allow write: if false;
     }
 
-    // =================================
+    match /auditLogs/{auditLogId} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSuperAdmin() ||
+        (resource.data.shopId is string && isShopMember(resource.data.shopId));
+      allow write: if false;
+    }
+
+    match /metrics/{docId=**} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    // -------------------------------------------------------------------------
     // User & Order Collections
-    // =================================
+    // -------------------------------------------------------------------------
     match /users/{userId} {
-      allow read: if isOwner(userId) || isSuperAdmin() || isFranchiseAdmin();
-      allow list: if isSuperAdmin() || isFranchiseAdmin();
-      allow create: if isOwner(userId) && request.resource.data.role == 'owner';
-      allow update: if isSuperAdmin() ||
-                    (isOwner(userId) && !(request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])));
+      allow get: if isSelf(userId) || isPlatformAdmin();
+      allow list: if isPlatformAdmin();
+      allow create: if isValidUserSelfCreate(userId);
+      allow update: if isSuperAdmin() || isValidUserSelfUpdate(userId);
       allow delete: if isSuperAdmin();
     }
-    
+
     match /orders/{orderId} {
-        allow create: if isOwner(request.resource.data.userId);
-        allow read: if isSuperAdmin() || isOwner(resource.data.userId);
-        allow update, delete: if false;
+      allow read: if isSuperAdmin() ||
+        (userDocExists() && isActiveUser(getUserProfile()) && resource.data.userId == request.auth.uid);
+      // Orders are strictly created and updated by trusted server Admin SDK endpoints
+      // (/api/create-order and /api/verify-payment) after signature & plan verification.
+      allow create, update, delete: if false;
     }
 
-    // =================================
-    // Main Multi-Tenant Shop Collections (Hardened)
-    // =================================
+    // -------------------------------------------------------------------------
+    // Multi-Tenant Shop Collections (Strict Tenant Isolation)
+    // -------------------------------------------------------------------------
     match /shops/{shopId} {
-      allow create: if isAuthenticated() && isOwner(request.resource.data.owner_id);
-      allow read: if isSuperAdmin() || isFranchiseAdmin() || isShopMember(shopId);
-      allow update, delete: if isSuperAdmin() || isShopOwner(shopId);
-      
+      // Shops are strictly provisioned via trusted server onboarding (/api/shops/onboard)
+      // to prevent arbitrary shopId, duplicate shops, or plan/status spoofing.
+      allow create: if false;
+      allow read: if isPlatformAdmin() || isShopMember(shopId);
+      allow update: if isSuperAdmin() || (isShopOwner(shopId) && isValidShopOwnerUpdate());
+      allow delete: if isSuperAdmin();
+
       match /customers/{customerId} {
-        allow write: if isShopMember(shopId);
-        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create: if isShopMember(shopId) && isShopOperational(shopId) && isValidCustomerCreate(shopId);
+        allow update: if isShopMember(shopId) && isShopOperational(shopId) && isValidCustomerProfileUpdate();
+        allow delete: if false;
       }
-      
+
       match /ledger/{ledgerId} {
-        // Enforce deterministic isolation: shopId in path must match data
-        allow create: if isShopMember(shopId) && request.resource.data.shop_id == shopId;
-        allow read: if isShopMember(shopId) || isFranchiseAdmin() || isSuperAdmin();
-        allow update, delete: if false; // Ledger is immutable
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create: if isShopMember(shopId) && isShopOperational(shopId) && isValidLedgerCreate(shopId);
+        // Ledger entries are strictly append-only and immutable.
+        allow update, delete: if false;
       }
 
       match /insights/{insightId} {
-          allow read: if isShopMember(shopId);
-          allow write: if false; // System only
-          allow delete: if isShopMember(shopId);
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create, update: if false;
+        // Only shop owners or super admins may dismiss/delete risk alerts.
+        allow delete: if isShopOwner(shopId) || isSuperAdmin();
       }
 
       match /{subcollection}/{docId=**} {
-          allow read, write: if false; // Strict fallback
+        allow read, write: if false;
       }
+    }
+
+    // -------------------------------------------------------------------------
+    // Explicit Default Deny for All Unknown Collections
+    // -------------------------------------------------------------------------
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

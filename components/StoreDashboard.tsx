@@ -1,13 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { db } from "../firebase";
-import {
-  collection,
-  query,
-  where,
-  limit,
-  onSnapshot,
-  doc,
-} from "firebase/firestore";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   TrendingUp,
   Users,
@@ -18,6 +9,7 @@ import {
   IndianRupee,
   Bell,
   Sparkles,
+  AlertCircle,
 } from "lucide-react";
 import {
   BarChart,
@@ -30,29 +22,58 @@ import {
   Cell,
 } from "recharts";
 import { cn } from "../lib/utils";
+import { subscribeShop } from "../services/adapters/shopAdapter";
+import { subscribeCustomers } from "../services/adapters/customerAdapter";
+import { subscribeLedger } from "../services/adapters/ledgerAdapter";
+import { subscribeInsights } from "../services/adapters/insightsAdapter";
+import { aiProxyClient } from "../services/adapters/aiProxyClient";
 import {
-  generateAlertAction,
-  generateMarketingContent,
-  generateMarketingPoster,
-} from "../services/geminiService";
-import { Transaction, Customer as CustomerType } from "../types";
+  getReadOnlyDemoSnapshot,
+  isDemoShopId,
+} from "../services/adapters/demoFixtures";
+import type {
+  AdapterError,
+  AuthSession,
+  CanonicalCustomer,
+  CanonicalInsight,
+  CanonicalLedgerEntry,
+  ShopProfile,
+} from "../services/adapters/types";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { Card } from "./ui/Card";
 import { StatWidget } from "./ui/StatWidget";
 
-interface StoreData {
-  id: string;
-  name: string;
-  totalSales: number;
-  totalUdhaar: number;
+interface StoreDashboardProps {
+  storeId: string;
+  session?: AuthSession | null;
 }
 
-export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
-  const [store, setStore] = useState<StoreData | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [customers, setCustomers] = useState<CustomerType[]>([]);
+function formatRelativeTime(timestampMs: number | null): string {
+  if (!timestampMs) return "Recently";
+  const diffMs = Date.now() - timestampMs;
+  if (diffMs < 60_000) return "Just now";
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "Yesterday";
+  return `${days} days ago`;
+}
+
+export const StoreDashboard: React.FC<StoreDashboardProps> = ({
+  storeId,
+  session = null,
+}) => {
+  const isDemo = isDemoShopId(storeId);
+  const [shop, setShop] = useState<ShopProfile | null>(null);
+  const [ledgerEntries, setLedgerEntries] = useState<CanonicalLedgerEntry[]>([]);
+  const [customers, setCustomers] = useState<CanonicalCustomer[]>([]);
+  const [insights, setInsights] = useState<CanonicalInsight[]>([]);
   const [loading, setLoading] = useState(true);
+  const [adapterError, setAdapterError] = useState<AdapterError | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<
     "overview" | "live-desk" | "inventory" | "alerts" | "marketing" | "qr"
@@ -101,107 +122,98 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
   const [triggeredAlerts, setTriggeredAlerts] = useState<Set<string>>(
     new Set(),
   );
-  const [removingAlerts, setRemovingAlerts] = useState<Set<string>>(new Set());
-  const [hiddenAlerts, setHiddenAlerts] = useState<Set<string>>(new Set());
+  const [removingAlerts] = useState<Set<string>>(new Set());
+  const [hiddenAlerts] = useState<Set<string>>(new Set());
   const [isBlasting, setIsBlasting] = useState(false);
   const [blastProgress, setBlastProgress] = useState(0);
 
   useEffect(() => {
-    if (storeId === "demo-mode" || storeId === "sharma-kirana-demo" || !storeId) {
-      setStore({
-        id: "sharma-kirana-demo",
-        name: "Sharma Kirana & General Store (Live Demo)",
-        totalSales: 45200,
-        totalUdhaar: 12500,
-      });
-      setTransactions([
-        {
-          id: "1",
-          type: "sale",
-          amount: 500,
-          items: "2kg Sugar, Milk",
-          date: "Just now",
-          timestamp: 0,
-          customerName: "",
-          customerPhone: "",
-        },
-        {
-          id: "2",
-          type: "udhaar",
-          amount: 1500,
-          items: "Flour 10kg, Cooking Oil",
-          date: "2 hours ago",
-          timestamp: 0,
-          customerName: "",
-          customerPhone: "",
-        },
-        {
-          id: "3",
-          type: "payment",
-          amount: 800,
-          items: "Paid old udhaar",
-          date: "Yesterday",
-          timestamp: 0,
-          customerName: "",
-          customerPhone: "",
-        },
-      ]);
-      setCustomers([
-        {
-          phone: "9876543210",
-          name: "Ramesh Singh",
-          totalLTV: 4500,
-          balance: 2500,
-          lastSeen: "",
-        },
-        {
-          phone: "9876543211",
-          name: "Suresh Kumar",
-          totalLTV: 1500,
-          balance: 1500,
-          lastSeen: "",
-        },
-      ]);
+    setAdapterError(null);
+    setLoading(true);
+
+    // Strictly isolated read-only demo fixtures ONLY for explicit public /demo route
+    if (isDemo) {
+      const snapshot = getReadOnlyDemoSnapshot();
+      setShop(snapshot.shop);
+      setLedgerEntries(snapshot.ledger);
+      setCustomers(snapshot.customers);
+      setInsights(snapshot.insights);
+      setQrShopName(snapshot.shop.name);
       setLoading(false);
       return;
     }
 
-    const storeRef = doc(db, "stores", storeId);
-    const unsubscribeStore = onSnapshot(storeRef, (doc) => {
-      if (doc.exists()) {
-        setStore({ id: doc.id, ...doc.data() } as StoreData);
-      }
-    });
-
-    const transactionsRef = collection(storeRef, "transactions");
-    const qTransactions = query(transactionsRef, limit(10));
-    const unsubscribeTransactions = onSnapshot(qTransactions, (snapshot) => {
-      const txs = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as Transaction,
-      );
-      // Memory sort to prevent index missing errors
-      txs.sort((a, b) => b.timestamp - a.timestamp);
-      setTransactions(txs);
+    if (!storeId || !session) {
       setLoading(false);
+      return;
+    }
+
+    const unsubShop = subscribeShop(storeId, session, {
+      onData: (profile) => {
+        setShop(profile);
+        setQrShopName(profile.name);
+        setLoading(false);
+      },
+      onError: (err) => {
+        setAdapterError(err);
+        setLoading(false);
+      },
     });
 
-    const customersRef = collection(storeRef, "customers");
-    const qCustomers = query(customersRef, where("balance", ">", 0), limit(10));
-    const unsubscribeCustomers = onSnapshot(qCustomers, (snapshot) => {
-      const custs = snapshot.docs.map(
-        (doc) => ({ id: doc.id, ...doc.data() }) as unknown as CustomerType,
-      );
-      // Memory sort to prevent index missing errors
-      custs.sort((a, b) => b.balance - a.balance);
-      setCustomers(custs);
+    const unsubLedger = subscribeLedger(
+      storeId,
+      session,
+      {
+        onData: (entries) => {
+          setLedgerEntries(entries);
+          setLoading(false);
+        },
+        onError: (err) => {
+          setAdapterError(err);
+          setLoading(false);
+        },
+      },
+      { maxEntries: 25 },
+    );
+
+    const unsubCustomers = subscribeCustomers(storeId, session, {
+      onData: (custs) => {
+        setCustomers(custs);
+      },
+      onError: (err) => {
+        setAdapterError(err);
+      },
+    });
+
+    const unsubInsights = subscribeInsights(storeId, session, {
+      onData: (items) => {
+        setInsights(items);
+      },
+      onError: (err) => {
+        // Non-fatal if insights collection is empty or temporarily unavailable
+        console.warn("Insights subscription notice:", err.message);
+      },
     });
 
     return () => {
-      unsubscribeStore();
-      unsubscribeTransactions();
-      unsubscribeCustomers();
+      unsubShop();
+      unsubLedger();
+      unsubCustomers();
+      unsubInsights();
     };
-  }, [storeId]);
+  }, [storeId, session, isDemo]);
+
+  const pendingCustomers = useMemo(
+    () => customers.filter((c) => c.balance > 0),
+    [customers],
+  );
+
+  const totalUdhaar = useMemo(
+    () => pendingCustomers.reduce((sum, c) => sum + c.balance, 0),
+    [pendingCustomers],
+  );
+
+  const totalRecovery = shop?.impactMetrics.totalRecoveryInr ?? 0;
 
   const handleAlertAction = async (
     title: string,
@@ -210,133 +222,175 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
   ) => {
     setSelectedAlert({ title, desc, count });
     setIsAlertProcessing(true);
-    let nudge = "";
-    if (storeId === "demo-mode") {
-      await new Promise((r) => setTimeout(r, 1500));
-      nudge =
-        "Namaste Ramesh, aapka ₹2450 ka udhaar baki hai. Kripya aaj hi payment karein. DukaanMitra dwara bheja gaya sandesh.";
-    } else {
-      nudge = await generateAlertAction(title, desc);
+    try {
+      if (isDemo) {
+        await new Promise((r) => setTimeout(r, 600));
+        setAlertNudge(
+          "Namaste Ramesh, aapka ₹2,500 ka udhaar baki hai. Kripya aaj hi UPI se payment karein. DukaanMitra dwara bheja gaya sandesh.",
+        );
+      } else {
+        const res = await aiProxyClient.generateAlertNudge(
+          { shopId: storeId, title, description: desc },
+          session,
+        );
+        setAlertNudge(res.nudge);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : undefined;
+      setAlertNudge(
+        message ||
+          "AI nudge proxy is not configured yet. Draft your reminder manually.",
+      );
+    } finally {
+      setIsAlertProcessing(false);
     }
-    setAlertNudge(nudge);
-    setIsAlertProcessing(false);
   };
 
   const handleExecuteBlast = async () => {
-    setIsBlasting(true);
-    setBlastProgress(0);
-
-    const interval = setInterval(() => {
-      setBlastProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 100);
-
-    await new Promise((r) => setTimeout(r, 2500));
-    setIsBlasting(false);
-    alert(
-      `DukaanMitra Blast: Campaign successfully dispatched to ${selectedAlert?.count || 0} Grahaks!`,
-    );
-    if (selectedAlert) {
-      const currentAlertTitle = selectedAlert.title;
-      setTriggeredAlerts((prev) => new Set(prev).add(currentAlertTitle));
-      setSelectedAlert(null);
-      setTimeout(() => {
-        setRemovingAlerts((prev) => new Set(prev).add(currentAlertTitle));
-        setTimeout(() => {
-          setHiddenAlerts((prev) => new Set(prev).add(currentAlertTitle));
-        }, 500); // Wait for transition to complete
-      }, 1000);
+    if (isDemo) {
+      setIsBlasting(true);
+      setBlastProgress(100);
+      await new Promise((r) => setTimeout(r, 500));
+      setIsBlasting(false);
+      setStatusMessage(
+        `Demo Sandbox: Previewed campaign dispatch for ${selectedAlert?.count || 0} sample contacts (no live messages sent).`,
+      );
+      if (selectedAlert) {
+        const currentAlertTitle = selectedAlert.title;
+        setTriggeredAlerts((prev) => new Set(prev).add(currentAlertTitle));
+        setSelectedAlert(null);
+      }
+      return;
     }
+
+    setStatusMessage(
+      "Live WhatsApp campaign dispatch requires verified WhatsApp Cloud API gateway integration (Phase 5).",
+    );
+    setSelectedAlert(null);
   };
 
   const handleGenerateMarketing = async () => {
     setIsGenerating(true);
-    if (storeId === "demo-mode") {
-      await new Promise((r) => setTimeout(r, 1500));
+    try {
+      if (isDemo) {
+        await new Promise((r) => setTimeout(r, 600));
+        setGeneratedContent(
+          "🎉 Festive Offer! 🎉 20% off on all dairy items this Sunday! Jaldi aaiye Sharma Kirana mein.",
+        );
+      } else {
+        const res = await aiProxyClient.generateMarketingCopy(
+          {
+            shopId: storeId,
+            campaignType: marketingType,
+            details: marketingDetails,
+          },
+          session,
+        );
+        setGeneratedContent(res.content);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : undefined;
       setGeneratedContent(
-        "🎉 Festive Offer! 🎉 20% off on all dairy items this Sunday! Jaldi aaiye Amit's Supermart mein. 🏃‍♂️💨",
+        message ||
+          "Marketing AI proxy is not configured yet (VITE_AI_PROXY_BASE_URL).",
       );
-    } else {
-      const content = await generateMarketingContent(
-        marketingType,
-        marketingDetails,
-      );
-      setGeneratedContent(content);
+    } finally {
+      setIsGenerating(false);
     }
-    setIsGenerating(false);
   };
 
   const handleGeneratePoster = async () => {
     setIsPosterGenerating(true);
     try {
-      if (storeId === "demo-mode") {
-        await new Promise((r) => setTimeout(r, 2000));
+      if (isDemo) {
+        await new Promise((r) => setTimeout(r, 600));
         setGeneratedPoster(
           "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA4MDAgMTIwMCI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik00MDAgMzAwQTEwMCAxMDAgMCAwIDEgNTAwIDQwMEExMDAgMTAwIDAgMCAxIDQwMCA1MDBBMTAwIDEwMCAwIDAgMSA1MDAgMzAwWiIgZmlsbD0iI2U1ZTdlYiIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkeT0iLjNlbSIgZmlsbD0iIzZiNzI4MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjYwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5Qcm9tb3Rpb25hbCBQb3N0ZXI8L3RleHQ+PC9zdmc+",
         );
       } else {
-        const poster = await generateMarketingPoster(
-          `${marketingType}: ${marketingDetails}`,
+        setStatusMessage(
+          "AI Poster generation requires the authenticated server-side AI proxy (Phase 3/6) — direct browser Gemini API calls are disabled.",
         );
-        setGeneratedPoster(poster);
       }
-    } catch (e) {
-      console.error("Poster gen failed", e);
     } finally {
       setIsPosterGenerating(false);
     }
   };
 
   const chartData = [
-    { name: "Sales", value: store?.totalSales || 0, color: "#10b981" },
-    { name: "Udhaar", value: store?.totalUdhaar || 0, color: "#ef4444" },
+    { name: "Recovery / Paid", value: totalRecovery, color: "#10b981" },
+    { name: "Udhaar", value: totalUdhaar, color: "#ef4444" },
   ];
 
-  const alerts = [
-    {
-      title: "Udhaar Recovery",
-      icon: "💸",
-      desc: "4 customers haven't paid in 15+ days. Recover ₹2,450.",
-      count: 4,
-      priority: "High",
-    },
-    {
-      title: "Review Prompt",
-      icon: "⭐",
-      desc: "12 happy customers from yesterday. Ask for Google Reviews.",
-      count: 12,
-      priority: "Med",
-    },
-    {
-      title: "Restock: Sugar",
-      icon: "📦",
-      desc: "Frequently logged in bills, but stock is low.",
-      count: 1,
-      priority: "Urgent",
-    },
-  ];
+  const alerts = useMemo(() => {
+    return insights.map((item) => ({
+      id: item.id,
+      title: item.title,
+      icon:
+        item.type === "RISK_ALERT" || item.type === "SALES_DROP"
+          ? "⚠️"
+          : item.type === "ACTION_REQUIRED"
+            ? "💸"
+            : item.type === "SUCCESS"
+              ? "✅"
+              : "⭐",
+      desc: item.message,
+      count: pendingCustomers.length,
+      priority:
+        item.type === "RISK_ALERT" || item.type === "SALES_DROP"
+          ? "Urgent"
+          : item.type === "ACTION_REQUIRED"
+            ? "High"
+            : "Med",
+    }));
+  }, [insights, pendingCustomers.length]);
 
   if (loading)
     return (
       <div className="p-8 text-center text-gray-500">Loading your Munim...</div>
     );
 
+  if (adapterError && !isDemo) {
+    return (
+      <div className="p-8 max-w-2xl mx-auto">
+        <Card className="p-8 border-2 border-rose-200 bg-rose-50/40 space-y-3">
+          <div className="flex items-center gap-3 text-rose-700">
+            <AlertCircle size={22} />
+            <h2 className="text-lg font-black">Unable to Load Shop Data</h2>
+          </div>
+          <p className="text-sm text-slate-700 font-medium">
+            {adapterError.message}
+          </p>
+          <p className="text-xs text-slate-500">
+            Error Code: <span className="font-mono">{adapterError.code}</span>
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-8 max-w-6xl mx-auto">
+      {statusMessage && (
+        <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-900 text-xs font-bold flex items-center justify-between gap-4">
+          <span>{statusMessage}</span>
+          <button
+            onClick={() => setStatusMessage(null)}
+            className="text-indigo-600 hover:underline uppercase tracking-wider text-[10px]"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{store?.name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{shop?.name}</h1>
           <p className="text-gray-500">Aapka Digital Munim Dashboard</p>
         </div>
         <div className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full flex items-center gap-2 font-medium">
           <Clock size={18} />
-          <span>Live Updates</span>
+          <span>{isDemo ? "Read-Only Demo Sandbox" : "Live Updates"}</span>
         </div>
       </div>
 
@@ -641,22 +695,22 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatWidget
-              label="Total Sales"
-              value={`₹${store?.totalSales?.toLocaleString() || 0}`}
+              label="Total Recovery"
+              value={`₹${totalRecovery.toLocaleString()}`}
               icon={<TrendingUp size={24} />}
               color="emerald"
-              trend={{ value: 12, isUp: true }}
+              trend={{ value: shop?.impactMetrics.totalEntries || 0, isUp: true }}
             />
             <StatWidget
               label="Total Udhaar"
-              value={`₹${store?.totalUdhaar?.toLocaleString() || 0}`}
+              value={`₹${totalUdhaar.toLocaleString()}`}
               icon={<CreditCard size={24} />}
               color="rose"
-              trend={{ value: 5, isUp: false }}
+              trend={{ value: pendingCustomers.length, isUp: false }}
             />
             <StatWidget
               label="Pending Customers"
-              value={customers.length}
+              value={pendingCustomers.length}
               icon={<Users size={24} />}
               color="indigo"
             />
@@ -701,56 +755,64 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
                 </Button>
               </Card.Header>
               <Card.Content>
-                {transactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-[1.5rem] transition-colors border border-transparent hover:border-slate-100"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center",
-                          tx.type === "sale"
-                            ? "bg-emerald-100 text-emerald-600"
-                            : tx.type === "udhaar"
-                              ? "bg-rose-100 text-rose-600"
-                              : "bg-blue-100 text-blue-600",
-                        )}
-                      >
-                        {tx.type === "sale" ? (
-                          <ArrowUpRight size={20} />
-                        ) : tx.type === "udhaar" ? (
-                          <ArrowDownRight size={20} />
-                        ) : (
-                          <IndianRupee size={20} />
-                        )}
+                {ledgerEntries.length === 0 ? (
+                  <p className="text-sm text-slate-500 py-6 text-center">
+                    No ledger entries recorded yet for this shop.
+                  </p>
+                ) : (
+                  ledgerEntries.map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="flex items-center justify-between p-4 hover:bg-slate-50 rounded-[1.5rem] transition-colors border border-transparent hover:border-slate-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center",
+                            tx.type === "sale"
+                              ? "bg-emerald-100 text-emerald-600"
+                              : tx.type === "udhaar"
+                                ? "bg-rose-100 text-rose-600"
+                                : "bg-blue-100 text-blue-600",
+                          )}
+                        >
+                          {tx.type === "sale" ? (
+                            <ArrowUpRight size={20} />
+                          ) : tx.type === "udhaar" ? (
+                            <ArrowDownRight size={20} />
+                          ) : (
+                            <IndianRupee size={20} />
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900 capitalize">
+                            {tx.type} {tx.customerName ? `• ${tx.customerName}` : ""}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {tx.item || "No description"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900 capitalize">
-                          {tx.type}
+                      <div className="text-right">
+                        <p
+                          className={cn(
+                            "text-sm font-bold",
+                            tx.type === "sale"
+                              ? "text-emerald-600"
+                              : tx.type === "udhaar"
+                                ? "text-rose-600"
+                                : "text-blue-600",
+                          )}
+                        >
+                          {tx.type === "udhaar" ? "-" : "+"}₹{tx.amount}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          {tx.items || "No description"}
+                        <p className="text-[10px] text-slate-400">
+                          {formatRelativeTime(tx.createdAtMs)}
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p
-                        className={cn(
-                          "text-sm font-bold",
-                          tx.type === "sale"
-                            ? "text-emerald-600"
-                            : tx.type === "udhaar"
-                              ? "text-rose-600"
-                              : "text-blue-600",
-                        )}
-                      >
-                        {tx.type === "udhaar" ? "-" : "+"}₹{tx.amount}
-                      </p>
-                      <p className="text-[10px] text-slate-400">{tx.date}</p>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </Card.Content>
             </Card>
 
@@ -763,38 +825,44 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
                 </Button>
               </Card.Header>
               <Card.Content>
-                {customers.map((cust) => (
-                  <div
-                    key={cust.phone}
-                    className="flex items-center justify-between p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
-                        {cust.name[0]}
+                {pendingCustomers.length === 0 ? (
+                  <p className="text-sm text-slate-500 py-6 text-center">
+                    No pending udhaar balances.
+                  </p>
+                ) : (
+                  pendingCustomers.map((cust) => (
+                    <div
+                      key={cust.id}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold">
+                          {cust.name[0]}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">
+                            {cust.name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Last visit: {formatRelativeTime(cust.lastVisitMs)}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-900">
-                          {cust.name}
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-rose-600">
+                          ₹{cust.balance.toLocaleString()}
                         </p>
-                        <p className="text-xs text-slate-500">
-                          Last seen: Today
-                        </p>
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          className="mt-1 h-6 px-2 text-[8px]"
+                        >
+                          Send Reminder
+                        </Button>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-bold text-rose-600">
-                        ₹{cust.totalLTV}
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        className="mt-1 h-6 px-2 text-[8px]"
-                      >
-                        Send Reminder
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </Card.Content>
 
               {/* Chart */}
@@ -1061,7 +1129,13 @@ export const StoreDashboard: React.FC<{ storeId: string }> = ({ storeId }) => {
                     <Button
                       variant="outline"
                       className="bg-white text-slate-900 border-none"
-                      onClick={() => alert("Asset saved to Shop Media Library")}
+                      onClick={() =>
+                        setStatusMessage(
+                          isDemo
+                            ? "Demo Sandbox: Asset previewed locally."
+                            : "Media asset persistence routes through Core Engine Media API (Phase 4).",
+                        )
+                      }
                     >
                       Save Asset
                     </Button>

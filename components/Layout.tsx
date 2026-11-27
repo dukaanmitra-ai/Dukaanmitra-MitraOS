@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
-import { signOut, User } from "firebase/auth";
+import type { User } from "firebase/auth";
+import { signOutCurrentUser } from "../services/adapters/authAdapter";
 import {
   ShieldCheck,
   LogOut,
@@ -143,7 +143,7 @@ const Layout: React.FC<LayoutProps> = ({
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await signOutCurrentUser();
       navigate("/");
     } catch (err) {
       console.error("Logout failed", err);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { auth } from "../../firebase";
+import { getFirebaseAuth, firebaseConfigStatus } from "../../firebase";
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -69,18 +69,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
     try {
-      await signInWithPopup(auth, provider);
+      const firebaseAuth = getFirebaseAuth();
+      await signInWithPopup(firebaseAuth, provider);
       onClose();
-    } catch (err: any) {
-      console.error("Google Sign-In Popup error:", err);
-      if (err.code === "auth/popup-closed-by-user") {
+    } catch (err: unknown) {
+      const authErr = err as { code?: string; message?: string };
+      console.error("Google Sign-In Popup error:", authErr);
+      if (authErr.code === "auth/popup-closed-by-user") {
         setError("Sign-in popup was closed before completing.");
-      } else if (err.code === "auth/unauthorized-domain") {
+      } else if (authErr.code === "auth/unauthorized-domain") {
         setError(
-          `Domain not authorized. Please add "${window.location.hostname}" to Authorized Domains in your Firebase console under Authentication > Settings.`,
+          `Domain not authorized. Please add "${window.location.hostname}" to Authorized Domains in Firebase project mvp1-aafa3 under Authentication > Settings.`,
         );
       } else {
-        setError(err.message || "Google Sign-In failed.");
+        setError(authErr.message || "Google Sign-In failed.");
       }
     } finally {
       setLoading(false);
@@ -93,10 +95,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithRedirect(auth, provider);
-    } catch (err: any) {
-      console.error("Google Redirect error:", err);
-      setError(err.message || "Google Redirect Sign-In failed.");
+      const firebaseAuth = getFirebaseAuth();
+      await signInWithRedirect(firebaseAuth, provider);
+    } catch (err: unknown) {
+      const authErr = err as { message?: string };
+      console.error("Google Redirect error:", authErr);
+      setError(authErr.message || "Google Redirect Sign-In failed.");
       setLoading(false);
     }
   };
@@ -118,12 +122,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSuccessMessage(null);
 
     try {
+      const firebaseAuth = getFirebaseAuth();
       if (mode === "login") {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(firebaseAuth, email, password);
         onClose();
       } else if (mode === "signup") {
         const userCredential = await createUserWithEmailAndPassword(
-          auth,
+          firebaseAuth,
           email,
           password,
         );
@@ -133,32 +138,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           });
         }
         setSuccessMessage(
-          "Account created successfully! Synchronizing system...",
+          "Account created successfully! Verifying profile in mvp1-aafa3...",
         );
         setTimeout(() => {
           onClose();
         }, 1500);
       }
-    } catch (err: any) {
-      console.error("Email authentication failed:", err);
+    } catch (err: unknown) {
+      const authErr = err as { code?: string; message?: string };
+      console.error("Email authentication failed:", authErr);
       if (
-        err.code === "auth/invalid-credential" ||
-        err.code === "auth/wrong-password" ||
-        err.code === "auth/user-not-found"
+        authErr.code === "auth/invalid-credential" ||
+        authErr.code === "auth/wrong-password" ||
+        authErr.code === "auth/user-not-found"
       ) {
         setError("Invalid email or password. Please verify your credentials.");
-      } else if (err.code === "auth/email-already-in-use") {
+      } else if (authErr.code === "auth/email-already-in-use") {
         setError("This email is already registered. Please sign in instead.");
-      } else if (err.code === "auth/weak-password") {
+      } else if (authErr.code === "auth/weak-password") {
         setError("Password should be at least 6 characters.");
-      } else if (err.code === "auth/operation-not-allowed") {
+      } else if (authErr.code === "auth/operation-not-allowed") {
         setError(
-          "Email/Password provider is disabled. Please enable it in the Firebase console > Authentication > Sign-in method.",
+          "Email/Password provider is disabled. Please enable it in Firebase project mvp1-aafa3 > Authentication > Sign-in method.",
         );
       } else {
         setError(
-          err.message ||
-            "Authentication failed. Make sure your Firebase credentials are correct.",
+          authErr.message ||
+            "Authentication failed. Verify your Firebase mvp1-aafa3 configuration.",
         );
       }
     } finally {
@@ -179,70 +185,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setSuccessMessage(null);
 
     try {
-      await sendPasswordResetEmail(auth, email);
+      const firebaseAuth = getFirebaseAuth();
+      await sendPasswordResetEmail(firebaseAuth, email);
       setSuccessMessage("Password reset email sent! Check your inbox.");
-    } catch (err: any) {
-      console.error("Password reset error:", err);
-      setError(err.message || "Failed to send reset link.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Instant Demo bypass (forces matching dummy account generation)
-  const handleDemoBypass = async () => {
-    setLoading(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const demoEmail = "demo@dukaanmitra.in";
-    const demoPassword = "demoUser1234";
-
-    try {
-      await signInWithEmailAndPassword(auth, demoEmail, demoPassword);
-      setSuccessMessage("Logged in as Demo Merchant!");
-      setTimeout(() => {
-        onClose();
-      }, 1000);
-    } catch (err: any) {
-      // If user does not exist, auto-create it
-      if (
-        err.code === "auth/user-not-found" ||
-        err.code === "auth/invalid-credential" ||
-        err.code === "auth/wrong-password"
-      ) {
-        try {
-          const uCred = await createUserWithEmailAndPassword(
-            auth,
-            demoEmail,
-            demoPassword,
-          );
-          if (uCred.user) {
-            await updateProfile(uCred.user, {
-              displayName: "Demo Indian Merchant",
-            });
-          }
-          setSuccessMessage(
-            "Demo profile generated and signed in successfully!",
-          );
-          setTimeout(() => {
-            onClose();
-          }, 1500);
-        } catch (createErr: any) {
-          console.error("Bypass generation failed:", createErr);
-          if (createErr.code === "auth/operation-not-allowed") {
-            setError(
-              "Email/Password auth is disabled. Enable it in your Firebase console so you can log in.",
-            );
-          } else {
-            setError(
-              "Could not auto-generate demo user. Please use manual registration.",
-            );
-          }
-        }
-      } else {
-        setError(err.message || "Demo login failed.");
-      }
+    } catch (err: unknown) {
+      const authErr = err as { message?: string };
+      console.error("Password reset error:", authErr);
+      setError(authErr.message || "Failed to send reset link.");
     } finally {
       setLoading(false);
     }
@@ -281,6 +230,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
         {/* Scrollable Container */}
         <div className="max-h-[75vh] overflow-y-auto p-8 space-y-6">
+          {!firebaseConfigStatus.isConfigured && (
+            <div className="flex gap-3 bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl text-amber-800 text-xs font-bold leading-relaxed">
+              <AlertCircle size={20} className="shrink-0 text-amber-600" />
+              <p>{firebaseConfigStatus.error}</p>
+            </div>
+          )}
           {/* Messages Alerts */}
           {error && (
             <div className="flex gap-3 bg-rose-50 border-2 border-rose-200 p-4 rounded-2xl text-rose-700 text-xs font-bold leading-relaxed">
@@ -467,29 +422,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 </Button>
               </form>
 
-              {/* Seamless Bypass Option */}
+              {/* Read-Only Public Demo Link (No hardcoded credentials) */}
               {(mode === "login" || mode === "signup") && (
                 <div className="mt-8 pt-6 border-t-[3px] border-dashed border-slate-100 flex flex-col items-center">
-                  <div className="flex items-center gap-2 mb-4 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full border border-emerald-200">
-                    <Cpu size={14} className="animate-spin" />
+                  <div className="flex items-center gap-2 mb-3 bg-emerald-50 text-emerald-700 px-4 py-1.5 rounded-full border border-emerald-200">
+                    <Cpu size={14} />
                     <span className="text-[9px] font-black uppercase tracking-[0.2em] italic">
-                      Instant Sandbox Environment
+                      Isolated Read-Only Sandbox
                     </span>
                   </div>
-                  <Button
-                    onClick={handleDemoBypass}
-                    disabled={loading}
-                    variant="secondary"
-                    size="sm"
-                    className="w-full bg-slate-900 shadow-[4px_4px_0px_0px_rgba(16,185,129,1)]"
-                    rightIcon={<ArrowRight size={14} />}
+                  <a
+                    href="/demo"
+                    onClick={handleClose}
+                    className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white text-xs font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-indigo-600 transition-all"
                   >
-                    Quick Sandbox Login (Instant Test)
-                  </Button>
+                    <span>Explore Public /demo Sandbox</span>
+                    <ArrowRight size={14} />
+                  </a>
                   <p className="text-[10px] text-slate-400 font-bold text-center mt-3 max-w-sm leading-relaxed">
-                    Stuck in pop-ups or deploying on local / Vercel? Bypass auth
-                    limitations instantly using Indian Test Merchant sandbox
-                    credentials.
+                    Preview MitraOS safely with read-only sample data. Production accounts require verified Firebase Authentication on project mvp1-aafa3.
                   </p>
                 </div>
               )}
@@ -535,7 +486,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <li>
                     Select your project:{" "}
                     <strong className="text-slate-800 font-black bg-slate-100 px-1 py-0.5 rounded">
-                      amit-ahi
+                      mvp1-aafa3
                     </strong>
                     .
                   </li>

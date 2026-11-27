@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DUKAANMITRA_DB", os.path.join(BASE_DIR, "dukaanmitra.db"))
-APP_SECRET = os.getenv("APP_SECRET", "dev-only-change-me")
+APP_SECRET = os.getenv("APP_SECRET", "").strip()
 WA_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "")
 WA_APP_SECRET = os.getenv("WHATSAPP_APP_SECRET", "")
 WA_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
@@ -145,11 +145,23 @@ def get_business(c, business_id):
     if not row: raise HTTPException(404, "Business not found")
     return dict(row)
 
+def require_service_auth(request: Request) -> None:
+    configured = os.getenv("APP_SECRET", APP_SECRET).strip()
+    if not configured:
+        raise HTTPException(503, "Service authentication secret (APP_SECRET) is not configured")
+    auth_header = request.headers.get("authorization", "")
+    provided = auth_header[7:].strip() if auth_header.startswith("Bearer ") else request.headers.get("x-app-secret", "").strip()
+    if not provided or not hmac.compare_digest(provided, configured):
+        raise HTTPException(401, "Authentication required")
+
 def role_for(c, business_id, actor_id):
     if not actor_id:
-        return "owner" if os.getenv("ALLOW_DEMO_OWNER", "true").lower() == "true" else "viewer"
-    r = c.execute("SELECT role FROM users WHERE id=? AND business_id=?", (actor_id,business_id)).fetchone()
-    if not r: raise HTTPException(403, "User is not a member of this business")
+        if os.getenv("ALLOW_DEMO_OWNER", "false").lower() == "true" and os.getenv("NODE_ENV", "") != "production":
+            return "owner"
+        raise HTTPException(401, "Verified actor identity is required")
+    r = c.execute("SELECT role FROM users WHERE id=? AND business_id=?", (actor_id, business_id)).fetchone()
+    if not r:
+        raise HTTPException(403, "User is not a member of this business")
     return r["role"]
 
 def require_role(role, allowed):
@@ -343,15 +355,21 @@ def audit_history(business_id: str, limit: int = 100):
         return [{**dict(r),"details":json.loads(r["details_json"])} for r in rows]
 
 @app.post("/api/uploads")
-async def upload(file: UploadFile = File(...)):
-    data=await file.read(MAX_UPLOAD_BYTES+1)
-    if len(data)>MAX_UPLOAD_BYTES: raise HTTPException(413,"File exceeds 8 MB limit")
-    ext=os.path.splitext(file.filename or "")[1].lower()
-    if ext not in {".png",".jpg",".jpeg",".webp",".pdf",".txt",".csv"}:
-        raise HTTPException(415,"Supported files: PNG, JPG, WEBP, PDF, TXT, CSV")
-    name=f"{uuid.uuid4()}{ext}"
-    path=os.path.join("uploads",name)
-    with open(path,"wb") as f: f.write(data)
+async def upload(request: Request, file: UploadFile = File(...)):
+    require_service_auth(request)
+    data = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "File exceeds 8 MB limit")
+    ext = os.path.splitext(file.filename or "")[1].lower()
+    if ext not in {".png", ".jpg", ".jpeg", ".webp", ".pdf", ".txt", ".csv"}:
+        raise HTTPException(415, "Supported files: PNG, JPG, WEBP, PDF, TXT, CSV")
+    name = f"{uuid.uuid4()}{ext}"
+    resolved_uploads = os.path.realpath(uploads_dir)
+    path = os.path.realpath(os.path.join(resolved_uploads, name))
+    if not path.startswith(resolved_uploads + os.sep):
+        raise HTTPException(400, "Invalid upload destination")
+    with open(path, "wb") as f:
+        f.write(data)
     extracted=""
     if ext in {".txt",".csv"}:
         extracted=data.decode("utf-8",errors="replace")[:20000]
@@ -398,21 +416,24 @@ async def whatsapp_receive(request: Request, x_hub_signature_256: Optional[str] 
 
 @app.post("/api/whatsapp/send")
 async def whatsapp_send(request: Request):
+    require_service_auth(request)
     # Official Cloud API sender. Kept optional and disabled until credentials exist.
     if not (WA_ACCESS_TOKEN and WA_PHONE_NUMBER_ID):
-        raise HTTPException(503,"WhatsApp Cloud API is not configured")
-    body=await request.json()
-    to=body.get("to"); message=body.get("message")
-    if not to or not message: raise HTTPException(400,"to and message are required")
+        raise HTTPException(503, "WhatsApp Cloud API is not configured")
+    body = await request.json()
+    to = body.get("to")
+    message = body.get("message")
+    if not to or not message:
+        raise HTTPException(400, "to and message are required")
     import urllib.request
-    url=f"https://graph.facebook.com/v21.0/{WA_PHONE_NUMBER_ID}/messages"
-    payload=json.dumps({"messaging_product":"whatsapp","to":to,"type":"text","text":{"body":message}}).encode()
-    req=urllib.request.Request(url,data=payload,headers={"Authorization":f"Bearer {WA_ACCESS_TOKEN}","Content-Type":"application/json"},method="POST")
+    url = f"https://graph.facebook.com/v21.0/{WA_PHONE_NUMBER_ID}/messages"
+    payload = json.dumps({"messaging_product": "whatsapp", "to": to, "type": "text", "text": {"body": message}}).encode()
+    req = urllib.request.Request(url, data=payload, headers={"Authorization": f"Bearer {WA_ACCESS_TOKEN}", "Content-Type": "application/json"}, method="POST")
     try:
-        with urllib.request.urlopen(req,timeout=15) as res:
+        with urllib.request.urlopen(req, timeout=15) as res:
             return json.loads(res.read().decode())
     except Exception as e:
-        raise HTTPException(502,f"WhatsApp provider request failed: {type(e).__name__}")
+        raise HTTPException(502, f"WhatsApp provider request failed: {type(e).__name__}")
 
 
 # Phase 1 Master Blueprint: Connect Extensions (Sales, Outbox, MCP Gateway, Compliance OS)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { executeAction } from '@/lib/services/action-engine';
+import { NextAuthError, verifyNextRequestAuth } from '@/lib/server-auth';
 
 type ExecuteActionBody = {
   action?: {
@@ -15,14 +16,10 @@ type ExecuteActionBody = {
       };
     };
   };
-  actor?: {
-    id?: string;
-    role?: string;
-    shopId?: string;
-  };
 };
 
 const MAX_STRING_LENGTH = 500;
+const ALLOWED_ACTION_TYPES = new Set(['ADD_LEDGER_ENTRY', 'SEND_REMINDER']);
 const DANGEROUS_INPUT_PATTERN = /(<script|<\/script>|javascript:|onerror\s*=|onload\s*=|--|;\s*drop\s+table)/i;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -38,24 +35,23 @@ function sanitizeText(value: unknown): string | null {
   return trimmed;
 }
 
-function validateAndNormalizeBody(body: unknown): { valid: true; data: ExecuteActionBody } | { valid: false; message: string } {
+function validateAndNormalizeBody(
+  body: unknown,
+): { valid: true; data: ExecuteActionBody } | { valid: false; message: string } {
   if (!isPlainObject(body)) {
     return { valid: false, message: 'Payload must be a JSON object.' };
   }
 
   const parsed = body as ExecuteActionBody;
-  if (!isPlainObject(parsed.action) || !isPlainObject(parsed.actor)) {
-    return { valid: false, message: 'Missing action or actor object.' };
+  if (!isPlainObject(parsed.action)) {
+    return { valid: false, message: 'Missing action object.' };
   }
 
   const actionType = sanitizeText(parsed.action.type);
-  const actorId = sanitizeText(parsed.actor.id);
-  const actorRole = sanitizeText(parsed.actor.role);
-  const actorShopId = sanitizeText(parsed.actor.shopId);
   const payload = parsed.action.payload;
 
-  if (!actionType || !actorId || !actorRole || !isPlainObject(payload)) {
-    return { valid: false, message: 'Invalid required fields in action or actor.' };
+  if (!actionType || !ALLOWED_ACTION_TYPES.has(actionType) || !isPlainObject(payload)) {
+    return { valid: false, message: 'Invalid or unsupported action type.' };
   }
 
   const payloadShopId = sanitizeText(payload.shopId);
@@ -69,10 +65,13 @@ function validateAndNormalizeBody(body: unknown): { valid: true; data: ExecuteAc
   if (
     !payloadShopId ||
     !customerPhone ||
+    !/^\+?[0-9]{10,15}$/.test(customerPhone) ||
     !transactionType ||
     (transactionType !== 'credit' && transactionType !== 'payment') ||
     typeof amount !== 'number' ||
-    !Number.isFinite(amount)
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    amount > 10_000_000
   ) {
     return { valid: false, message: 'Invalid action payload fields.' };
   }
@@ -93,34 +92,61 @@ function validateAndNormalizeBody(body: unknown): { valid: true; data: ExecuteAc
           },
         },
       },
-      actor: {
-        id: actorId,
-        role: actorRole,
-        shopId: actorShopId ?? undefined,
-      },
     },
   };
 }
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Derive actor strictly from verified Firebase ID token + Firestore users/{uid}.
+    //    NEVER trust request.body.actor or client-supplied role/shopId.
+    const authCtx = await verifyNextRequestAuth(request);
+
     const body = await request.json().catch(() => null);
     const validated = validateAndNormalizeBody(body);
     if (!validated.valid) {
-      console.error('[VALIDATION_ERROR] /api/execute-action', validated.message);
       return NextResponse.json(
         { success: false, message: validated.message },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const result = await executeAction(validated.data.action, validated.data.actor);
-    return NextResponse.json(result, { status: 200 });
+    const targetShopId = validated.data.action!.payload!.shopId!;
+
+    // 2. Enforce strict tenant isolation & role check server-side
+    if (authCtx.role === 'franchise_admin') {
+      return NextResponse.json(
+        { success: false, message: 'Franchise admins cannot execute shop mutations.' },
+        { status: 403 },
+      );
+    }
+
+    if (authCtx.role !== 'super_admin' && authCtx.shopId !== targetShopId) {
+      return NextResponse.json(
+        { success: false, message: 'Forbidden: cross-tenant action denied.' },
+        { status: 403 },
+      );
+    }
+
+    const verifiedActor = {
+      id: authCtx.uid,
+      role: authCtx.role,
+      shopId: authCtx.shopId ?? undefined,
+    };
+
+    const result = await executeAction(validated.data.action, verifiedActor);
+    return NextResponse.json(result, { status: result.success ? 200 : 400 });
   } catch (error) {
-    console.error('[API_ERROR] /api/execute-action', error);
+    if (error instanceof NextAuthError) {
+      return NextResponse.json(
+        { success: false, message: error.message, code: error.code },
+        { status: error.status },
+      );
+    }
+    console.error('[API_ERROR] /api/execute-action failed');
     return NextResponse.json(
       { success: false, message: 'Failed to execute action.' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

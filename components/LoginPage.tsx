@@ -1,73 +1,51 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import {
   Sparkles,
-  ShoppingBag,
   ShieldCheck,
   ArrowRight,
-  UserCheck,
-  Lock,
-  Mail,
   Store,
-  CheckCircle2,
-  Crown,
-  KeyRound,
   AlertCircle
 } from "lucide-react";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
-import { auth } from "../firebase";
+import { getFirebaseAuth, isFirebaseConfigured } from "../firebase";
 import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword } from "firebase/auth";
 
 interface LoginPageProps {
   onLoginSuccess?: (role: "merchant" | "superadmin", storeId?: string) => void;
 }
 
-export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
+export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess: _onLoginSuccess }) => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleInstantDemoLogin = (roleType: "merchant" | "superadmin") => {
-    localStorage.setItem("dm_demo_auth", JSON.stringify({
-      authenticated: true,
-      role: roleType,
-      storeId: "sharma-kirana-demo",
-      user: {
-        displayName: roleType === "merchant" ? "Sharma Ji (Kirana Store)" : "DukaanMitra Lead Engineer",
-        email: roleType === "merchant" ? "sharma.kirana@dukaanmitra.in" : "admin@dukaanmitra.in",
-        uid: roleType === "merchant" ? "usr_demo_merchant_1" : "usr_demo_admin_1"
-      }
-    }));
-
-    if (onLoginSuccess) {
-      onLoginSuccess(roleType, "sharma-kirana-demo");
-    }
-
-    if (roleType === "superadmin") {
-      navigate("/bible");
-    } else {
-      navigate("/dashboard");
-    }
+  const handlePublicDemoPreview = () => {
+    // Public sandbox uses isolated read-only fixtures on /demo — never writes fake auth to localStorage.
+    navigate("/demo");
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     setErrorMsg(null);
     try {
+      const firebaseAuth = getFirebaseAuth();
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithPopup(firebaseAuth, provider);
       navigate("/dashboard");
-    } catch (err: any) {
-      console.warn("Google sign in notice:", err);
-      if (err.code === "auth/unauthorized-domain") {
-        setErrorMsg("Domain authentication pending in Firebase console. Please use 1-Click Instant Demo Login below.");
+    } catch (err: unknown) {
+      const authErr = err as { code?: string; message?: string };
+      console.warn("Google sign in notice:", authErr);
+      if (authErr.code === "FIREBASE_NOT_CONFIGURED" || authErr.code === "FIREBASE_PROJECT_MISMATCH") {
+        setErrorMsg(authErr.message || "Firebase configuration error.");
+      } else if (authErr.code === "auth/unauthorized-domain") {
+        setErrorMsg("This domain is not yet authorized in Firebase project mvp1-aafa3 Authentication settings.");
       } else {
-        setErrorMsg(err.message || "Sign-in failed. Please use 1-Click Instant Demo Login.");
+        setErrorMsg(authErr.message || "Google sign-in failed. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -83,10 +61,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setErrorMsg(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const firebaseAuth = getFirebaseAuth();
+      await signInWithEmailAndPassword(firebaseAuth, email, password);
       navigate("/dashboard");
-    } catch (err: any) {
-      setErrorMsg(err.message || "Invalid credentials. Use 1-Click Demo Login to preview.");
+    } catch (err: unknown) {
+      const authErr = err as { message?: string };
+      setErrorMsg(authErr.message || "Invalid credentials. Please verify your email and password.");
     } finally {
       setLoading(false);
     }
@@ -116,36 +96,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </p>
         </div>
 
-        {/* 1-Click Instant Access Banner (Primary Recommended Path) */}
+        {/* Read-Only Public Sandbox Preview */}
         <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 border-2 border-indigo-500/50 rounded-2xl p-6 space-y-4 shadow-2xl shadow-indigo-500/10">
           <div className="flex items-center gap-2 text-indigo-400">
             <Sparkles className="w-5 h-5 animate-pulse" />
             <h2 className="text-sm font-black uppercase tracking-wider text-white">
-              Instant 1-Click Demo Access
+              Public Read-Only Demo Sandbox
             </h2>
           </div>
           <p className="text-xs text-slate-300">
-            No signup or password required! Explore the full production merchant console, inventory insights, and digital Khata instantly:
+            Explore the merchant console using isolated read-only sample data. No production account or database writes are performed.
           </p>
 
           <div className="space-y-2.5 pt-1">
             <button
-              onClick={() => handleInstantDemoLogin("merchant")}
+              onClick={handlePublicDemoPreview}
               className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 hover:scale-[1.02] transition-all"
             >
               <Store className="w-4 h-4" />
-              <span>Launch Demo Merchant Dashboard</span>
+              <span>Open Read-Only Demo Dashboard</span>
               <ArrowRight className="w-4 h-4" />
             </button>
-
-            <button
-              onClick={() => handleInstantDemoLogin("superadmin")}
-              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-slate-700 transition-all"
-            >
-              <Crown className="w-4 h-4 text-amber-400" />
-              <span>SuperAdmin & Engineering Bible</span>
-            </button>
           </div>
+          {!isFirebaseConfigured && (
+            <p className="text-[11px] text-amber-300 font-medium">
+              Note: Firebase environment variables for project mvp1-aafa3 are not configured in this preview environment.
+            </p>
+          )}
         </div>
 
         {/* Traditional Auth Form (Email / Google) */}

@@ -1,16 +1,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
-import { auth, db } from './firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
+import {
+  subscribeAuthSession,
+  signOutCurrentUser,
+} from './services/adapters/authAdapter';
+import type { AdapterError, AuthSession } from './services/adapters/types';
 import { Card } from './components/ui/Card';
 import LandingPage from './components/LandingPage';
 import Layout from './components/Layout';
 import { NotFound } from './components/NotFound';
 import FeaturePage from './components/FeaturePage';
 import StaticPage from './components/StaticPage';
-import { UserRole } from './types';
 import ScrollToTop from './components/ScrollToTop';
 import { Helmet } from 'react-helmet-async';
 import { AuthModal } from './components/ui/AuthModal';
@@ -71,7 +73,8 @@ function CityRedirect() {
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
-  const [role, setRole] = useState<UserRole | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [authError, setAuthError] = useState<AdapterError | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const location = useLocation();
@@ -116,62 +119,11 @@ export default function App() {
   }, [location]);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-      if (u) {
-        try {
-          // Check role
-          const adminDoc = await getDoc(doc(db, 'admins', u.uid));
-          if (adminDoc.exists()) {
-            setRole({ uid: u.uid, role: 'superadmin' });
-          } else {
-            // Check if merchant has a store
-            const merchantDoc = await getDoc(doc(db, 'merchants', u.uid));
-            if (merchantDoc.exists()) {
-              const storeId = merchantDoc.data().storeId;
-              setRole({ uid: u.uid, role: 'merchant', storeId });
-            } else {
-              // New user, create a default store for demo
-              const storeRef = await addDoc(collection(db, 'stores'), {
-                name: `${u.displayName}'s Retail Store`,
-                ownerUid: u.uid,
-                whatsappNumber: "+91 98765 43210",
-                createdAt: serverTimestamp(),
-                totalSales: 45200,
-                totalUdhaar: 12500
-              });
-              await setDoc(doc(db, 'merchants', u.uid), { storeId: storeRef.id });
-              setRole({ uid: u.uid, role: 'merchant', storeId: storeRef.id });
-              
-              // Seed transactions
-              const txs = [
-                { type: 'sale', amount: 500, items: '2kg Sugar, Milk', date: 'Just now', timestamp: Date.now() },
-                { type: 'udhaar', amount: 1500, items: 'Flour 10kg, Cooking Oil', date: '2 hours ago', timestamp: Date.now() - 7200000 },
-                { type: 'payment', amount: 800, items: 'Paid old udhaar', date: 'Yesterday', timestamp: Date.now() - 86400000 }
-              ];
-              for (const tx of txs) {
-                await addDoc(collection(db, 'stores', storeRef.id, 'transactions'), tx);
-              }
-              
-              // Seed customers
-              const custs = [
-                { phone: '9876543210', name: 'Ramesh Singh', totalLTV: 4500, balance: 2500, lastSeen: 'Today' },
-                { phone: '9876543211', name: 'Suresh Kumar', totalLTV: 1500, balance: 1500, lastSeen: 'Yesterday' },
-                { phone: '9876543212', name: 'Manoj Tiwari', totalLTV: 3200, balance: 1200, lastSeen: '2 days ago' },
-                { phone: '9876543213', name: 'Anita Devi', totalLTV: 5400, balance: 800, lastSeen: 'Today' }
-              ];
-              for (const cust of custs) {
-                await addDoc(collection(db, 'stores', storeRef.id, 'customers'), cust);
-              }
-            }
-          }
-        } catch (error) {
-          console.error("Auth init error:", error);
-        }
-      } else {
-        setRole(null);
-      }
-      setLoading(false);
+    const unsubscribe = subscribeAuthSession((state) => {
+      setUser(state.firebaseUser);
+      setSession(state.session);
+      setAuthError(state.error);
+      setLoading(state.loading);
     });
 
     return () => unsubscribe();
@@ -194,10 +146,36 @@ export default function App() {
         </div>
       </div>
     );
-    if (!user) {
+    if (authError && !session) {
+      return (
+        <div className="min-h-[70vh] flex items-center justify-center p-6">
+          <Card className="max-w-lg w-full p-8 space-y-4 border-2 border-rose-200 bg-rose-50/40">
+            <h2 className="text-xl font-black text-slate-900">Account Verification Required</h2>
+            <p className="text-sm text-slate-600 font-medium">{authError.message}</p>
+            <div className="flex gap-3 pt-2">
+              {user && (
+                <button
+                  onClick={() => signOutCurrentUser()}
+                  className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold uppercase tracking-wider"
+                >
+                  Sign Out
+                </button>
+              )}
+              <button
+                onClick={handleLogin}
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold uppercase tracking-wider"
+              >
+                Sign In Again
+              </button>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+    if (!user || !session) {
       return <Navigate to="/" replace />;
     }
-    if (adminOnly && role?.role !== 'superadmin') {
+    if (adminOnly && !session.canAccessAdmin) {
       return <Navigate to="/dashboard" replace />;
     }
     return <>{children}</>;
@@ -211,7 +189,7 @@ export default function App() {
         <meta property="og:image" content="https://dukaanmitra.in/logo.svg" />
         <meta name="twitter:image" content="https://dukaanmitra.in/logo.svg" />
       </Helmet>
-      <Layout isAdmin={role?.role === 'superadmin'} user={user} onLogin={handleLogin}>
+      <Layout isAdmin={Boolean(session?.canAccessAdmin)} user={user} onLogin={handleLogin}>
       <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -235,12 +213,12 @@ export default function App() {
           <Route path="/support" element={<StaticPage />} />
           <Route path="/bible" element={
             <ProtectedRoute adminOnly>
-              <DukaanMitraEngineeringBible user={user} role={role?.role} onLogin={handleLogin} />
+              <DukaanMitraEngineeringBible user={user} role={session?.legacyRole} onLogin={handleLogin} />
             </ProtectedRoute>
           } />
           <Route path="/engineering-bible" element={
             <ProtectedRoute adminOnly>
-              <DukaanMitraEngineeringBible user={user} role={role?.role} onLogin={handleLogin} />
+              <DukaanMitraEngineeringBible user={user} role={session?.legacyRole} onLogin={handleLogin} />
             </ProtectedRoute>
           } />
 
@@ -280,12 +258,23 @@ export default function App() {
           <Route path="/demo" element={<StoreDashboard storeId="demo-mode" />} />
           <Route path="/dashboard" element={
             <ProtectedRoute>
-              {role?.storeId ? <StoreDashboard storeId={role.storeId} /> : <div>Loading Store...</div>}
+              {session?.shopId ? (
+                <StoreDashboard storeId={session.shopId} session={session} />
+              ) : (
+                <div className="min-h-[70vh] flex items-center justify-center p-6">
+                  <Card className="max-w-lg w-full p-8 space-y-4">
+                    <h2 className="text-xl font-black text-slate-900">No Shop Linked Yet</h2>
+                    <p className="text-sm text-slate-600">
+                      Your verified account ({session?.email || user?.email}) does not have an assigned shop in Firebase project <strong>mvp1-aafa3</strong> yet. Automatic fake shop creation is disabled; complete verified shop onboarding or contact support to link your shop.
+                    </p>
+                  </Card>
+                </div>
+              )}
             </ProtectedRoute>
           } />
           <Route path="/whatsapp" element={
             <ProtectedRoute>
-              {role?.storeId ? (
+              {session?.shopId ? (
                 <div className="p-10 flex flex-col items-center justify-center min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(99,102,241,0.05),transparent)]">
                   <div className="text-center mb-12 space-y-6 max-w-2xl">
                     <div className="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-black uppercase tracking-[0.3em] italic border-2 border-indigo-100 shadow-sm">
@@ -297,7 +286,7 @@ export default function App() {
                   <Card className="w-full max-w-2xl h-[700px] p-0 overflow-hidden shadow-[32px_32px_0px_0px_rgba(15,23,42,0.05)] border-4 border-slate-900 relative">
                      <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none " />
                      <div className="relative z-10 h-full">
-                        <WhatsAppSimulation storeId={role.storeId} />
+                        <WhatsAppSimulation storeId={session.shopId} />
                      </div>
                   </Card>
                   <div className="mt-12 flex gap-4">
@@ -311,14 +300,23 @@ export default function App() {
                      </div>
                   </div>
                 </div>
-              ) : <div className="min-h-screen flex items-center justify-center font-black italic uppercase text-slate-400 text-2xl animate-pulse">Synchronizing Data...</div>}
+              ) : (
+                <div className="min-h-[70vh] flex items-center justify-center p-6">
+                  <Card className="max-w-lg w-full p-8 space-y-3">
+                    <h2 className="text-xl font-black text-slate-900">Shop Link Required</h2>
+                    <p className="text-sm text-slate-600">
+                      Link a verified shop in mvp1-aafa3 before launching WhatsApp Munim operations.
+                    </p>
+                  </Card>
+                </div>
+              )}
             </ProtectedRoute>
           } />
 
           {/* Admin Routes */}
           <Route path="/admin" element={
             <ProtectedRoute adminOnly>
-              <AdminDashboard />
+              <AdminDashboard session={session} />
             </ProtectedRoute>
           } />
 

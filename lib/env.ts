@@ -11,8 +11,8 @@ const envSchema = z.object({
   // Node Environment
   NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   
-  // API Keys
-  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required for AI features'),
+  // Server-only optional API key (must never be required or exposed in browser bundles)
+  GEMINI_API_KEY: z.string().min(1).optional(),
   
   // App Settings
   PORT: z.coerce.number().default(3000),
@@ -25,7 +25,7 @@ const envSchema = z.object({
 // For client-side validation of VITE_ variables, use import.meta.env.
 // For server-side or build-time validation, use process.env.
 
-export const validateEnv = (env: Record<string, any>) => {
+export const validateEnv = (env: Record<string, string | undefined>) => {
   const parsed = envSchema.safeParse(env);
 
   if (!parsed.success) {

@@ -2,171 +2,273 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: stores
-    // Document ID: storeId
-    // Fields:
-    //   - id: string (required)
-    //   - name: string (required)
-    //   - ownerUid: string (required, immutable)
-    //   - whatsappNumber: string (required)
-    //   - createdAt: timestamp (required)
-    //   - totalSales: number
-    //   - totalUdhaar: number
-    //
-    // Collection: stores/{storeId}/transactions
-    // Document ID: transactionId
-    // Fields:
-    //   - id: string (required)
-    //   - storeId: string (required)
-    //   - customerId: string (optional)
-    //   - type: string (required, enum: ["sale", "udhaar", "payment"])
-    //   - amount: number (required)
-    //   - description: string
-    //   - timestamp: timestamp (required)
-    //
-    // Collection: stores/{storeId}/customers
-    // Document ID: customerId
-    // Fields:
-    //   - id: string (required)
-    //   - storeId: string (required)
-    //   - name: string (required)
-    //   - whatsappNumber: string
-    //   - balance: number
-    //   - lastTransactionAt: timestamp
-    //
-    // Collection: admins
-    // Document ID: adminUid
-    // Fields:
-    //   - uid: string (required)
-    //   - email: string (required)
-    //   - role: string (required, enum: ["superadmin"])
-    //
-    // ===============================================================
-
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-    
-    function isSignedIn() {
-      return request.auth != null;
-    }
+    // =========================================================================
+    // DukaanMitra MitraOS — Canonical Hardened Firestore Rules (mvp1-aafa3)
+    // Kept synchronized with apps/dukaan-in-next/firestore.rules.
+    // Replaces legacy prototype stores/admins/merchants/memory_* rules and
+    // removes hardcoded personal email backdoors.
+    // Phase 3.2 Draft — DO NOT DEPLOY WITHOUT EXPLICIT DEPLOYMENT APPROVAL.
+    // =========================================================================
 
     function isAuthenticated() {
-      return isSignedIn();
+      return request.auth != null && request.auth.uid is string;
     }
 
-    function isEmailVerified() {
-      return isSignedIn();
+    function userDocPath(uid) {
+      return /databases/$(database)/documents/users/$(uid);
     }
 
-    function isValidId(id) {
-       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    function userDocExists() {
+      return isAuthenticated() && exists(userDocPath(request.auth.uid));
     }
 
-    function incoming() {
-      return request.resource.data;
+    function getUserProfile() {
+      return get(userDocPath(request.auth.uid)).data;
     }
 
-    function existing() {
-      return resource.data;
+    function isSessionNotRevoked(profile) {
+      return !('sessionRevokedAt' in profile) ||
+        profile.sessionRevokedAt == null ||
+        (profile.sessionRevokedAt is timestamp &&
+          request.auth.token.auth_time is int &&
+          request.auth.token.auth_time * 1000 >= profile.sessionRevokedAt.toMillis());
     }
 
-    function isAdmin() {
-      return isSignedIn() && 
-        (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
-         request.auth.token.email == "AMITSHARMA99976@gmail.com");
+    function isActiveUser(profile) {
+      return profile.status == 'active' && isSessionNotRevoked(profile);
     }
 
-    function isStoreOwner(storeId) {
-      return isSignedIn() && 
-        get(/databases/$(database)/documents/stores/$(storeId)).data.ownerUid == request.auth.uid;
+    function isSelf(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Validation Helpers
-    function isValidStore(data) {
-      return data.keys().hasAll(['name', 'ownerUid', 'whatsappNumber']) &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
-             data.ownerUid == request.auth.uid;
+    function isSuperAdmin() {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().role == 'super_admin';
     }
 
-    function isValidTransaction(data) {
-      return data.keys().hasAll(['type', 'amount']) &&
-             data.type in ["sale", "udhaar", "payment"] &&
-             data.amount is number && data.amount > 0;
+    function isFranchiseAdmin() {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().role == 'franchise_admin';
     }
 
-    function isValidCustomer(data) {
-      return data.keys().hasAll(['name']) &&
-             data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    function isPlatformAdmin() {
+      return isSuperAdmin() || isFranchiseAdmin();
     }
 
-    // ===============================================================
-    // Rules
-    // ===============================================================
+    function isShopMember(shopId) {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().shopId is string &&
+        getUserProfile().shopId == shopId &&
+        (getUserProfile().role == 'owner' || getUserProfile().role == 'staff');
+    }
 
-    // Default Deny
+    function isShopOwner(shopId) {
+      return userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        getUserProfile().shopId is string &&
+        getUserProfile().shopId == shopId &&
+        getUserProfile().role == 'owner' &&
+        exists(/databases/$(database)/documents/shops/$(shopId)) &&
+        get(/databases/$(database)/documents/shops/$(shopId)).data.owner_id == request.auth.uid;
+    }
+
+    function isShopOperational(shopId) {
+      return exists(/databases/$(database)/documents/shops/$(shopId)) &&
+        !(get(/databases/$(database)/documents/shops/$(shopId)).data.status in ['locked', 'suspended', 'cancelled', 'integrity_lock']);
+    }
+
+    function isValidUserSelfCreate(userId) {
+      let data = request.resource.data;
+      return isSelf(userId) &&
+        data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'role', 'status', 'shopId', 'createdAt', 'lastLogin', 'updated_at']) &&
+        data.uid == request.auth.uid &&
+        data.role == 'owner' &&
+        data.status == 'active' &&
+        (!('shopId' in data) || data.shopId == null);
+    }
+
+    function isValidUserSelfUpdate(userId) {
+      let diff = request.resource.data.diff(resource.data);
+      return isSelf(userId) &&
+        resource.data.status == 'active' &&
+        isSessionNotRevoked(resource.data) &&
+        !diff.affectedKeys().hasAny(['uid', 'role', 'status', 'shopId', 'sessionRevokedAt', 'createdAt']) &&
+        diff.affectedKeys().hasOnly(['displayName', 'photoURL', 'lastLogin', 'updated_at']);
+    }
+
+    function isValidShopOwnerUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return resource.data.owner_id == request.auth.uid &&
+        request.resource.data.owner_id == resource.data.owner_id &&
+        !diff.affectedKeys().hasAny([
+          'id', 'owner_id', 'plan', 'status', 'mrr', 'paid_till',
+          'trial_ends_at', 'created_at', 'integrityStatus',
+          'lastVerifiedAt', 'ledgerRootHash', 'impact_metrics'
+        ]) &&
+        diff.affectedKeys().hasOnly([
+          'name', 'phone', 'whatsapp', 'owner_name',
+          'address', 'city', 'state', 'pincode', 'settings', 'updated_at'
+        ]) &&
+        request.resource.data.name is string &&
+        request.resource.data.name.size() >= 2 &&
+        request.resource.data.name.size() <= 120;
+    }
+
+    function isValidCustomerCreate(shopId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'shop_id', 'phone', 'name', 'totalUdhaar', 'total_spent',
+          'visit_count', 'status', 'first_visit', 'last_visit',
+          'created_at', 'updated_at', 'reminderCount'
+        ]) &&
+        data.shop_id == shopId &&
+        data.phone is string &&
+        data.phone.size() >= 10 &&
+        data.phone.size() <= 16 &&
+        (!('name' in data) || (data.name is string && data.name.size() <= 120)) &&
+        (!('totalUdhaar' in data) || (data.totalUdhaar is number && data.totalUdhaar == 0)) &&
+        (!('total_spent' in data) || (data.total_spent is number && data.total_spent == 0)) &&
+        (!('visit_count' in data) || (data.visit_count is int && data.visit_count == 0));
+    }
+
+    function isValidCustomerProfileUpdate() {
+      let diff = request.resource.data.diff(resource.data);
+      return !diff.affectedKeys().hasAny([
+          'shop_id', 'phone', 'totalUdhaar', 'total_spent',
+          'visit_count', 'lastPaymentDate', 'first_visit', 'created_at'
+        ]) &&
+        diff.affectedKeys().hasOnly([
+          'name', 'status', 'lastReminderSentAt', 'reminderCount', 'updated_at'
+        ]) &&
+        (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() <= 120));
+    }
+
+    function isValidLedgerCreate(shopId) {
+      let data = request.resource.data;
+      return data.keys().hasAll(['shop_id', 'customerPhone', 'amount', 'type', 'createdAt']) &&
+        data.keys().hasOnly([
+          'id', 'shop_id', 'actorId', 'customerPhone', 'customerName',
+          'amount', 'item', 'type', 'source', 'correlationId', 'createdAt'
+        ]) &&
+        data.shop_id == shopId &&
+        (!('actorId' in data) || data.actorId == request.auth.uid) &&
+        data.customerPhone is string &&
+        data.customerPhone.size() >= 10 &&
+        data.customerPhone.size() <= 16 &&
+        data.type in ['credit', 'payment'] &&
+        data.amount is number &&
+        data.amount > 0 &&
+        data.amount <= 10000000 &&
+        (!('item' in data) || (data.item is string && data.item.size() <= 240)) &&
+        (!('customerName' in data) || (data.customerName is string && data.customerName.size() <= 120)) &&
+        (!('source' in data) || data.source in ['app', 'manual', 'app-ai']);
+    }
+
+    match /posts/{postId} {
+      allow read: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().size() == 1 &&
+        ((request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes']) &&
+          request.resource.data.likes is int &&
+          request.resource.data.likes == resource.data.likes + 1) ||
+         (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['views']) &&
+          request.resource.data.views is int &&
+          request.resource.data.views == resource.data.views + 1));
+      allow create, delete: if isSuperAdmin();
+    }
+
+    match /comments/{commentId} {
+      allow read: if true;
+      allow create: if isAuthenticated() &&
+        userDocExists() &&
+        isActiveUser(getUserProfile()) &&
+        request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isSuperAdmin();
+    }
+
+    match /contactFormSubmissions/{submissionId} {
+      allow create: if request.resource.data.keys().hasOnly(['name', 'email', 'phone', 'message', 'createdAt']) &&
+        request.resource.data.message is string &&
+        request.resource.data.message.size() > 0 &&
+        request.resource.data.message.size() <= 2000;
+      allow read, update, delete: if isSuperAdmin();
+    }
+
+    match /interactions/{interactionId} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    match /logs/{logId} {
+      allow read: if isSuperAdmin();
+      allow write: if false;
+    }
+
+    match /auditLogs/{auditLogId} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    match /notifications/{notificationId} {
+      allow read: if isSuperAdmin() ||
+        (resource.data.shopId is string && isShopMember(resource.data.shopId));
+      allow write: if false;
+    }
+
+    match /metrics/{docId=**} {
+      allow read: if isPlatformAdmin();
+      allow write: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if isSelf(userId) || isPlatformAdmin();
+      allow list: if isPlatformAdmin();
+      allow create: if isValidUserSelfCreate(userId);
+      allow update: if isSuperAdmin() || isValidUserSelfUpdate(userId);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow read: if isSuperAdmin() ||
+        (userDocExists() && isActiveUser(getUserProfile()) && resource.data.userId == request.auth.uid);
+      allow create, update, delete: if false;
+    }
+
+    match /shops/{shopId} {
+      allow create: if false;
+      allow read: if isPlatformAdmin() || isShopMember(shopId);
+      allow update: if isSuperAdmin() || (isShopOwner(shopId) && isValidShopOwnerUpdate());
+      allow delete: if isSuperAdmin();
+
+      match /customers/{customerId} {
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create: if isShopMember(shopId) && isShopOperational(shopId) && isValidCustomerCreate(shopId);
+        allow update: if isShopMember(shopId) && isShopOperational(shopId) && isValidCustomerProfileUpdate();
+        allow delete: if false;
+      }
+
+      match /ledger/{ledgerId} {
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create: if isShopMember(shopId) && isShopOperational(shopId) && isValidLedgerCreate(shopId);
+        allow update, delete: if false;
+      }
+
+      match /insights/{insightId} {
+        allow read: if isShopMember(shopId) || isPlatformAdmin();
+        allow create, update: if false;
+        allow delete: if isShopOwner(shopId) || isSuperAdmin();
+      }
+
+      match /{subcollection}/{docId=**} {
+        allow read, write: if false;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
-    }
-
-    // Stores
-    match /stores/{storeId} {
-      allow read: if isSignedIn() && (existing().ownerUid == request.auth.uid || isAdmin());
-      allow create: if isEmailVerified() && isValidStore(incoming()) && isValidId(storeId);
-      allow update: if (existing().ownerUid == request.auth.uid || isAdmin()) && 
-                    isValidStore(incoming()) && 
-                    incoming().ownerUid == existing().ownerUid &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['name', 'whatsappNumber', 'totalSales', 'totalUdhaar']);
-      allow delete: if isAdmin();
-
-      // Transactions
-      match /transactions/{transactionId} {
-        allow read: if isStoreOwner(storeId) || isAdmin();
-        allow create: if isStoreOwner(storeId) && isValidTransaction(incoming()) && isValidId(transactionId);
-        allow update: if isAdmin();
-        allow delete: if isAdmin();
-      }
-
-      // Customers
-      match /customers/{customerId} {
-        allow read: if isStoreOwner(storeId) || isAdmin();
-        allow create: if isStoreOwner(storeId) && isValidCustomer(incoming()) && isValidId(customerId);
-        allow update: if (isStoreOwner(storeId) || isAdmin()) && 
-                      isValidCustomer(incoming()) &&
-                      incoming().diff(existing()).affectedKeys().hasOnly(['name', 'whatsappNumber', 'balance', 'lastTransactionAt']);
-        allow delete: if isAdmin();
-      }
-    }
-
-    // Mem0g Graph Memory
-    match /memory_nodes/{nodeId} {
-      allow read: if isAuthenticated() && (resource.data.storeId == 'demo-mode' || isStoreOwner(resource.data.storeId) || isAdmin());
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (isStoreOwner(resource.data.storeId) || isAdmin());
-      allow delete: if isAdmin();
-    }
-
-    match /memory_relations/{relId} {
-      allow read: if isAuthenticated() && (resource.data.storeId == 'demo-mode' || isStoreOwner(resource.data.storeId) || isAdmin());
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated() && (isStoreOwner(resource.data.storeId) || isAdmin());
-      allow delete: if isAdmin();
-    }
-
-    // Admins
-    match /admins/{adminUid} {
-      allow read: if isAuthenticated() && (request.auth.uid == adminUid || isAdmin());
-      allow write: if isAdmin();
-    }
-
-    // Merchants
-    match /merchants/{merchantUid} {
-      allow read: if isAuthenticated() && (request.auth.uid == merchantUid || isAdmin());
-      allow write: if isAuthenticated() && (request.auth.uid == merchantUid || isAdmin());
     }
   }
 }

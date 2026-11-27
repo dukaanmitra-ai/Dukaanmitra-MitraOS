@@ -25,7 +25,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(
+  express.json({
+    limit: '128kb',
+    verify: (req, _res, buf) => {
+      (req as { rawBody?: Buffer }).rawBody = Buffer.from(buf);
+    },
+  }),
+);
 app.use(express.static(path.join(__dirname, '../public')));
 
 const prisma = new PrismaClient();
@@ -64,7 +71,8 @@ const whatsappSender = new WhatsAppSender(
 const webhookHandler = new WhatsAppWebhookHandler(
   prisma,
   eventRouter,
-  process.env.WHATSAPP_VERIFY_TOKEN || 'default_verify_token'
+  process.env.WHATSAPP_VERIFY_TOKEN || '',
+  process.env.WHATSAPP_APP_SECRET || ''
 );
 
 const billParserQueue = eventRouter.getQueue('bill_parser');

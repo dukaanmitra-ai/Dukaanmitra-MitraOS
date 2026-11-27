@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { EventRouter } from '../../core/events/event-router';
 import { OndcService } from '../../core/integration/ondc.service';
+import { requireCoreAuth, requireStoreAccess } from '../middleware/auth.middleware';
 
 export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter): Router {
   const router = Router();
@@ -12,8 +13,8 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
     try {
       const response = await ondcService.handleSearch(req.body);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing search' });
+    } catch {
+      res.status(400).json({ error: 'Error processing search' });
     }
   });
 
@@ -22,8 +23,8 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
     try {
       const response = ondcService.handleSelect(req.body);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing select' });
+    } catch {
+      res.status(400).json({ error: 'Error processing select' });
     }
   });
 
@@ -32,8 +33,8 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
     try {
       const response = ondcService.handleInit(req.body);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing init' });
+    } catch {
+      res.status(400).json({ error: 'Error processing init' });
     }
   });
 
@@ -42,8 +43,8 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
     try {
       const response = await ondcService.handleConfirm(req.body);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing confirm' });
+    } catch {
+      res.status(400).json({ error: 'Error processing confirm' });
     }
   });
 
@@ -54,8 +55,8 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
       const orderId = message?.order_id || 'ONDC-DEFAULT';
       const response = ondcService.handleStatus(context, orderId);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing status' });
+    } catch {
+      res.status(400).json({ error: 'Error processing status' });
     }
   });
 
@@ -67,20 +68,25 @@ export function createOndcRoutes(prisma: PrismaClient, eventRouter?: EventRouter
       const reasonCode = message?.cancellation_reason_id || '001';
       const response = ondcService.handleCancel(context, orderId, reasonCode);
       res.status(200).json(response);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error processing cancel' });
+    } catch {
+      res.status(400).json({ error: 'Error processing cancel' });
     }
   });
 
-  // 7. Store Catalog Synchronization
-  router.post('/catalog/:storeId/sync', async (req: Request, res: Response) => {
-    try {
-      const syncResult = await ondcService.syncCatalog(req.params.storeId);
-      res.status(200).json(syncResult);
-    } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Error syncing catalog' });
-    }
-  });
+  // 7. Store Catalog Synchronization (Owner-authorized)
+  router.post(
+    '/catalog/:storeId/sync',
+    requireCoreAuth,
+    requireStoreAccess((req) => req.params.storeId, { requireOwner: true }),
+    async (req: Request, res: Response) => {
+      try {
+        const syncResult = await ondcService.syncCatalog(req.params.storeId);
+        res.status(200).json(syncResult);
+      } catch {
+        res.status(400).json({ error: 'Error syncing catalog' });
+      }
+    },
+  );
 
   // 8. ONDC Health & Compliance Verification
   router.get('/health', (_req: Request, res: Response) => {

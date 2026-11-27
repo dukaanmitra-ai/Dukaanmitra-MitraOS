@@ -4,6 +4,12 @@ import { WhatsAppMunimService } from '../../core/agents/whatsapp-munim.agent';
 import { OpenWABridge } from '../../channels/whatsapp/openwa.bridge';
 import { PrismaClient } from '@prisma/client';
 import { EventRouter } from '../../core/events/event-router';
+import {
+  requireCoreAuth,
+  requireGatewayBridgeSecret,
+  requireStoreAccess,
+  CoreAuthenticatedRequest,
+} from '../middleware/auth.middleware';
 
 export function createWhatsAppRoutes(
   webhookHandler: WhatsAppWebhookHandler,
@@ -16,64 +22,60 @@ export function createWhatsAppRoutes(
     ? new OpenWABridge(prisma, eventRouter)
     : null;
 
-  // ─── Meta WhatsApp Cloud API Endpoints ─────────────────────────────────────
+  // ─── Meta WhatsApp Cloud API Endpoints (HMAC-verified inside webhookHandler) ─
   router.get('/webhook', (req, res) => webhookHandler.handleVerification(req, res));
   router.post('/webhook', (req, res) => webhookHandler.handleIncoming(req, res));
 
-  // ─── OpenWA / Baileys Self-Hosted Gateway Endpoints ─────────────────────────
+  // ─── OpenWA / Baileys Self-Hosted Gateway Endpoints (Authenticated) ─────────
 
-  /**
-   * OpenWA Webhook receiver:
-   * Captures events from OpenWA HTTP gateway (messages, voice notes, bill photos, session updates)
-   */
-  router.post('/openwa/webhook', async (req: Request, res: Response) => {
+  router.post('/openwa/webhook', requireGatewayBridgeSecret, async (req: Request, res: Response) => {
     try {
       if (!openWaBridge) {
         return res.status(200).json({ status: 'ok', warning: 'OpenWA bridge initialized in standalone mode' });
       }
       const result = await openWaBridge.handleWebhook(req.body);
       res.status(200).json({ status: 'success', handled: result.handled, reply: result.reply });
-    } catch (err: any) {
-      console.error('[OpenWA Route] Error handling webhook:', err.message);
-      res.status(500).json({ error: err.message || 'Webhook processing failed' });
+    } catch {
+      res.status(500).json({ error: 'Webhook processing failed' });
     }
   });
 
-  /**
-   * OpenWA Session Status & QR Code for Merchant Onboarding:
-   * Returns current connection state (CONNECTED, SCAN_QR_CODE) with base64 QR code
-   */
-  router.get('/openwa/status', async (req: Request, res: Response) => {
+  router.get('/openwa/status', requireCoreAuth, async (req: Request, res: Response) => {
     try {
       const session = (req.query.session as string) || 'default';
       if (!openWaBridge) {
-        return res.status(200).json({ status: 'CONNECTED', mock: true, message: 'OpenWA running in simulation mode' });
+        return res.status(503).json({ error: 'OpenWA bridge is not configured.' });
       }
       const statusData = await openWaBridge.getSessionStatus(session);
       res.status(200).json({ success: true, ...statusData });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message || 'Failed to fetch OpenWA status' });
+    } catch {
+      res.status(500).json({ error: 'Failed to fetch OpenWA status' });
     }
   });
 
-  /**
-   * Send WhatsApp text message via OpenWA Gateway
-   */
-  router.post('/openwa/send', async (req: Request, res: Response) => {
-    try {
-      const { to, message, session } = req.body;
-      if (!to || !message) {
-        return res.status(400).json({ error: 'Fields "to" and "message" are required' });
+  router.post(
+    '/openwa/send',
+    requireCoreAuth,
+    requireStoreAccess(
+      (req) => req.body?.storeId || (req as CoreAuthenticatedRequest).coreAuth?.storeId || undefined,
+      { requireOwner: true },
+    ),
+    async (req: Request, res: Response) => {
+      try {
+        const { to, message, session } = req.body;
+        if (!to || !message) {
+          return res.status(400).json({ error: 'Fields "to" and "message" are required' });
+        }
+        if (!openWaBridge) {
+          return res.status(503).json({ error: 'OpenWA bridge is not configured.' });
+        }
+        const ok = await openWaBridge.sendText(to, message, session);
+        res.status(200).json({ success: ok });
+      } catch {
+        res.status(500).json({ error: 'Failed to send WhatsApp message' });
       }
-      if (!openWaBridge) {
-        return res.status(200).json({ success: true, mock: true, sent: { to, message } });
-      }
-      const ok = await openWaBridge.sendText(to, message, session);
-      res.status(200).json({ success: ok });
-    } catch (err: any) {
-      res.status(500).json({ error: err.message || 'Failed to send WhatsApp message' });
-    }
-  });
+    },
+  );
 
   // ─── WhatsApp Munim Billing & Ledger Endpoints ──────────────────────────────
 

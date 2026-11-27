@@ -28,10 +28,8 @@ export default defineConfig(({ mode }) => {
         setupFiles: './src/test/setup.ts',
         exclude: ['node_modules/**', 'dist/**', 'apps/**', 'packages/**'],
       },
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
+      // Security: Never inject GEMINI_API_KEY or server secrets into browser bundles.
+      // All Gemini API calls must go through authenticated server-side /api/* endpoints.
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),

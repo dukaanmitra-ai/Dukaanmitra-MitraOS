@@ -1,37 +1,76 @@
+import crypto from 'crypto';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { EventRouter } from '../../core/events/event-router';
 import { EventType, EventSource } from '../../core/events/types';
+import { CoreAuthenticatedRequest, timingSafeEqualStr } from '../../api/middleware/auth.middleware';
 
 export class WhatsAppWebhookHandler {
   private prisma: PrismaClient;
   private eventRouter: EventRouter;
   private verifyToken: string;
+  private appSecret: string;
 
-  constructor(prisma: PrismaClient, eventRouter: EventRouter, verifyToken: string) {
+  constructor(
+    prisma: PrismaClient,
+    eventRouter: EventRouter,
+    verifyToken: string,
+    appSecret = process.env.WHATSAPP_APP_SECRET || '',
+  ) {
     this.prisma = prisma;
     this.eventRouter = eventRouter;
-    this.verifyToken = verifyToken;
+    this.verifyToken = verifyToken.trim();
+    this.appSecret = appSecret.trim();
   }
 
   async handleVerification(req: Request, res: Response): Promise<void> {
-    const mode = req.query['hub.mode'];
-    const token = req.query['hub.verify_token'];
-    const challenge = req.query['hub.challenge'];
+    if (!this.verifyToken) {
+      res.status(503).send('Webhook verify token not configured');
+      return;
+    }
+    const mode = String(req.query['hub.mode'] || '');
+    const token = String(req.query['hub.verify_token'] || '');
+    const challenge = String(req.query['hub.challenge'] || '');
 
-    if (mode === 'subscribe' && token === this.verifyToken) {
-      console.log('Webhook verified successfully');
+    if (mode === 'subscribe' && timingSafeEqualStr(token, this.verifyToken)) {
       res.status(200).send(challenge);
     } else {
-      console.error('Webhook verification failed');
       res.sendStatus(403);
     }
   }
 
+  private verifySignature(req: Request): boolean {
+    if (!this.appSecret) {
+      return false;
+    }
+    const signatureHeader = (req.header('x-hub-signature-256') || '').trim();
+    if (!signatureHeader.startsWith('sha256=')) {
+      return false;
+    }
+    const rawBody =
+      (req as CoreAuthenticatedRequest).rawBody ??
+      Buffer.from(JSON.stringify(req.body ?? {}), 'utf8');
+    const expected = `sha256=${crypto
+      .createHmac('sha256', this.appSecret)
+      .update(rawBody)
+      .digest('hex')}`;
+    return timingSafeEqualStr(signatureHeader, expected);
+  }
+
   async handleIncoming(req: Request, res: Response): Promise<void> {
+    if (!this.appSecret) {
+      res.status(503).json({ error: 'WhatsApp webhook secret not configured.' });
+      return;
+    }
+
+    if (!this.verifySignature(req)) {
+      res.status(401).json({ error: 'Invalid webhook signature.' });
+      return;
+    }
+
     const body = req.body;
 
-    if (body.object !== 'whatsapp_business_account') {
+    if (body?.object !== 'whatsapp_business_account') {
       res.sendStatus(404);
       return;
     }
@@ -42,7 +81,7 @@ export class WhatsAppWebhookHandler {
           if (change.field !== 'messages') continue;
 
           const value = change.value;
-          
+
           for (const message of value.messages || []) {
             await this.processMessage(message, value);
           }
@@ -50,13 +89,13 @@ export class WhatsAppWebhookHandler {
       }
 
       res.sendStatus(200);
-    } catch (error) {
-      console.error('Error processing webhook:', error);
+    } catch {
+      console.error('Error processing WhatsApp webhook');
       res.sendStatus(500);
     }
   }
 
-  private async processMessage(message: any, value: any): Promise<void> {
+  private async processMessage(message: any, _value: any): Promise<void> {
     const messageId = message.id;
     const phone = message.from;
     const messageType = message.type;
@@ -66,7 +105,6 @@ export class WhatsAppWebhookHandler {
     });
 
     if (existing) {
-      console.log(`Message ${messageId} already processed`);
       return;
     }
 
@@ -81,8 +119,6 @@ export class WhatsAppWebhookHandler {
       },
     });
 
-    // Media messages (photo / voice note) go through the multi-modal pipeline:
-    // MEDIA_RECEIVED → OcrAgent + VisionAgent (image) / VoiceAgent (audio).
     if (messageType === 'image' || messageType === 'audio' || messageType === 'video') {
       const mediaObj = message[messageType] ?? {};
       await this.eventRouter.route({
@@ -91,7 +127,7 @@ export class WhatsAppWebhookHandler {
         payload: {
           phone,
           kind: messageType === 'audio' ? 'audio' : 'image',
-          url: mediaObj.id ?? '',              // provider media id; resolved to URL by the agent's provider
+          url: mediaObj.id ?? '',
           mimeType: mediaObj.mime_type,
           message_id: messageId,
         },

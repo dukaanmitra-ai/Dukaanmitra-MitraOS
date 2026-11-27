@@ -1,15 +1,59 @@
 """
-DukaanMitra MCP Tool Gateway & Agent Interface
-Implements standard Model Context Protocol (MCP) typed tools with Zero Trust tenant scoping,
-policy checks, and maker-checker approval controls.
+DukaanMitra MCP Tool Gateway & Agent Interface (Phase 3.7 Hardened)
+Implements Model Context Protocol (MCP) typed tools with:
+- Verified signed server identity context (never trusts client-supplied tenant_id or approver_role)
+- Explicit tool permission registry (read/write classification & allowed roles)
+- Human-approval enforcement for sensitive write tools
+- Rate limiting, prompt-injection defense, and audit logging
 """
-import json, sqlite3, os
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timezone, timedelta
-from compliance_rules import validate_gstin, calculate_gst_breakdown, match_gstr2b, get_compliance_calendar
+import base64
+import hashlib
+import hmac
+import json
+import os
+import re
+import sqlite3
+import time
+import uuid
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Set
+from compliance_rules import (
+    calculate_gst_breakdown,
+    get_compliance_calendar,
+    match_gstr2b,
+    validate_gstin,
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.getenv("DUKAANMITRA_DB", os.path.join(BASE_DIR, "dukaanmitra.db"))
+MCP_GATEWAY_SECRET = os.getenv("MCP_GATEWAY_SECRET", "").strip()
+
+FORBIDDEN_OVERRIDE_KEYS = frozenset({
+    "tenant_id",
+    "tenantId",
+    "shopId",
+    "shop_id",
+    "actor",
+    "actor_id",
+    "actorId",
+    "role",
+    "actor_role",
+    "approver_role",
+    "approverRole",
+})
+
+PROMPT_INJECTION_PATTERNS = [
+    re.compile(r"\b(ignore|disregard|forget)\s+(all\s+)?(previous|prior|system)\s+(instructions?|prompts?|rules?)\b", re.I),
+    re.compile(r"\b(you\s+are\s+now|act\s+as|switch\s+to)\s+(a\s+)?(super_?admin|system|root|owner)\b", re.I),
+    re.compile(r"\b(approver_role|actor_role|tenant_id)\s*[:=]\s*['\"]?(super_admin|owner|manager|admin)", re.I),
+]
+
+VALID_ROLES = frozenset({"owner", "manager", "staff", "franchise_admin", "super_admin"})
+
+# Per-tenant sliding window rate limit buckets
+_RATE_BUCKETS: Dict[str, List[float]] = {}
+
 
 def get_db():
     conn = sqlite3.connect(DB_PATH)
@@ -17,43 +61,212 @@ def get_db():
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
 
+
 class SecurityPolicyException(Exception):
-    pass
+    def __init__(self, message: str, status_code: int = 403):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+@dataclass(frozen=True)
+class VerifiedMcpContext:
+    uid: str
+    role: str
+    tenant_id: str
+    human_approved: bool = False
+
+
+# ==============================================================================
+# Explicit Tool Permission Registry
+# ==============================================================================
+
+TOOL_POLICIES: Dict[str, Dict[str, Any]] = {
+    "get_inventory_summary": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "franchise_admin", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 30,
+    },
+    "detect_stockout_risk": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "franchise_admin", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 20,
+    },
+    "create_purchase_order_draft": {
+        "access": "write",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 10,
+    },
+    "approve_purchase_order": {
+        "access": "write",
+        "allowed_roles": frozenset({"owner", "manager", "super_admin"}),
+        "requires_human_approval": True,
+        "max_per_minute": 10,
+    },
+    "validate_gst_invoice": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "franchise_admin", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 30,
+    },
+    "reconcile_gstr2b": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 15,
+    },
+    "get_compliance_deadlines": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "franchise_admin", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 30,
+    },
+    "get_magic_insights": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 15,
+    },
+    "record_voice_transaction": {
+        "access": "write",
+        "allowed_roles": frozenset({"owner", "manager", "staff", "super_admin"}),
+        "requires_human_approval": True,
+        "max_per_minute": 20,
+    },
+    "get_supplier_mandi_arbitrage": {
+        "access": "read",
+        "allowed_roles": frozenset({"owner", "manager", "super_admin"}),
+        "requires_human_approval": False,
+        "max_per_minute": 15,
+    },
+}
+
+
+def verify_signed_mcp_context(
+    encoded_context: Optional[str],
+    signature_hex: Optional[str],
+    secret: Optional[str] = None,
+) -> VerifiedMcpContext:
+    """
+    Verifies HMAC-SHA256 signed server identity context forwarded by the
+    authenticated Node/Next.js gateway. Fails closed if secret or signature is missing.
+    """
+    key = (secret if secret is not None else os.getenv("MCP_GATEWAY_SECRET", MCP_GATEWAY_SECRET)).strip()
+    if not key:
+        raise SecurityPolicyException("MCP gateway authentication is not configured.", status_code=503)
+    if not encoded_context or not signature_hex:
+        raise SecurityPolicyException("Authentication required for MCP tool execution.", status_code=401)
+
+    expected = hmac.new(key.encode("utf-8"), encoded_context.encode("utf-8"), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, signature_hex.strip()):
+        raise SecurityPolicyException("Invalid MCP gateway signature.", status_code=401)
+
+    try:
+        padded = encoded_context + "=" * (-len(encoded_context) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(padded.encode("utf-8")).decode("utf-8"))
+    except Exception:
+        raise SecurityPolicyException("Malformed MCP identity context.", status_code=401)
+
+    uid = str(payload.get("uid") or "").strip()
+    role = str(payload.get("role") or "").strip()
+    tenant_id = str(payload.get("tenant_id") or payload.get("shopId") or "").strip()
+    exp = payload.get("exp")
+    human_approved = bool(payload.get("human_approved", False))
+
+    if not uid or role not in VALID_ROLES or not tenant_id:
+        raise SecurityPolicyException("Incomplete or unauthorized MCP identity claims.", status_code=403)
+    if not isinstance(exp, (int, float)) or exp <= time.time():
+        raise SecurityPolicyException("MCP identity context expired.", status_code=401)
+
+    return VerifiedMcpContext(
+        uid=uid,
+        role=role,
+        tenant_id=tenant_id,
+        human_approved=human_approved,
+    )
+
+
+def _check_rate_limit(key: str, max_per_minute: int) -> None:
+    now = time.time()
+    window_start = now - 60.0
+    timestamps = [t for t in _RATE_BUCKETS.get(key, []) if t >= window_start]
+    if len(timestamps) >= max_per_minute:
+        raise SecurityPolicyException("Rate limit exceeded for MCP tool.", status_code=429)
+    timestamps.append(now)
+    _RATE_BUCKETS[key] = timestamps
+
+
+def _scan_arguments_for_injection(value: Any) -> None:
+    if isinstance(value, str):
+        for pat in PROMPT_INJECTION_PATTERNS:
+            if pat.search(value):
+                raise SecurityPolicyException("Input blocked by AI safety policy.", status_code=400)
+    elif isinstance(value, dict):
+        for v in value.values():
+            _scan_arguments_for_injection(v)
+    elif isinstance(value, list):
+        for item in value:
+            _scan_arguments_for_injection(item)
+
 
 def verify_tenant_access(conn: sqlite3.Connection, tenant_id: str, actor_role: Optional[str] = None):
     row = conn.execute("SELECT id FROM businesses WHERE id=?", (tenant_id,)).fetchone()
     if not row:
-        raise SecurityPolicyException(f"Tenant isolation error: Business '{tenant_id}' does not exist or access denied.")
-    if actor_role and actor_role not in ["owner", "manager", "staff"]:
-        raise SecurityPolicyException(f"Authorization error: Role '{actor_role}' does not have sufficient permissions.")
+        raise SecurityPolicyException("Tenant isolation error: Business not found or access denied.", status_code=403)
+    if actor_role and actor_role not in VALID_ROLES:
+        raise SecurityPolicyException("Authorization error: Invalid actor role.", status_code=403)
+
+
+def _write_mcp_audit(
+    conn: sqlite3.Connection,
+    tenant_id: str,
+    actor_id: str,
+    action: str,
+    entity_type: str,
+    entity_id: Optional[str],
+    details: Dict[str, Any],
+) -> None:
+    try:
+        conn.execute(
+            "INSERT INTO audit_log (id, business_id, actor_id, action, entity_type, entity_id, details_json, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                f"aud_{uuid.uuid4().hex[:16]}",
+                tenant_id,
+                actor_id,
+                action,
+                entity_type,
+                entity_id,
+                json.dumps(details, ensure_ascii=False),
+                datetime.now(timezone.utc).isoformat(),
+            ),
+        )
+    except sqlite3.OperationalError:
+        # Backward compatibility if table lacks actor_id column in older local sqlite file
+        pass
+
 
 # ==============================================================================
-# MCP Tool Registry & Declarations
+# MCP Tool Registry & Declarations (No tenant_id or approver_role inputs exposed)
 # ==============================================================================
 
 MCP_TOOL_DEFINITIONS = [
     {
         "name": "get_inventory_summary",
-        "description": "Returns current inventory levels, items below reorder threshold, and total valuation for an authorized tenant.",
+        "description": "Returns current inventory levels, items below reorder threshold, and total valuation for the authenticated tenant.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "tenant_id": {"type": "string", "description": "Tenant/Business ID"},
                 "low_stock_only": {"type": "boolean", "default": False}
             },
-            "required": ["tenant_id"]
-        }
+        },
     },
     {
         "name": "detect_stockout_risk",
-        "description": "Calculates stockout risks based on current inventory, safety stock, and recent sales velocity.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "tenant_id": {"type": "string", "description": "Tenant/Business ID"}
-            },
-            "required": ["tenant_id"]
-        }
+        "description": "Calculates stockout risks based on current inventory and safety stock for the authenticated tenant.",
+        "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "create_purchase_order_draft",
@@ -61,7 +274,6 @@ MCP_TOOL_DEFINITIONS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "tenant_id": {"type": "string", "description": "Tenant/Business ID"},
                 "supplier_name": {"type": "string"},
                 "items": {
                     "type": "array",
@@ -70,44 +282,41 @@ MCP_TOOL_DEFINITIONS = [
                         "properties": {
                             "product_id": {"type": "string"},
                             "quantity": {"type": "number"},
-                            "unit_cost": {"type": "number"}
+                            "unit_cost": {"type": "number"},
                         },
-                        "required": ["product_id", "quantity", "unit_cost"]
-                    }
+                        "required": ["product_id", "quantity", "unit_cost"],
+                    },
                 },
-                "notes": {"type": "string"}
+                "notes": {"type": "string"},
             },
-            "required": ["tenant_id", "supplier_name", "items"]
-        }
+            "required": ["supplier_name", "items"],
+        },
     },
     {
         "name": "approve_purchase_order",
-        "description": "Maker-checker approval: Authorizes or rejects a draft purchase order. Restricted to owner or manager.",
+        "description": "Maker-checker approval: Authorizes or rejects a draft purchase order. Requires verified owner/manager identity and human approval.",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "tenant_id": {"type": "string"},
                 "order_id": {"type": "string"},
                 "action": {"type": "string", "enum": ["approve", "reject"]},
-                "approver_role": {"type": "string", "description": "Role of approving user"}
             },
-            "required": ["tenant_id", "order_id", "action", "approver_role"]
-        }
+            "required": ["order_id", "action"],
+        },
     },
     {
         "name": "validate_gst_invoice",
-        "description": "Validates GST invoice data, GSTIN format, tax calculation (CGST/SGST vs IGST), and mandatory tax rules.",
+        "description": "Validates GST invoice data, GSTIN format, and tax calculation (CGST/SGST vs IGST).",
         "inputSchema": {
             "type": "object",
             "properties": {
-                "tenant_id": {"type": "string"},
                 "supplier_gstin": {"type": "string"},
                 "recipient_gstin": {"type": "string"},
                 "taxable_value": {"type": "number"},
-                "gst_rate": {"type": "number"}
+                "gst_rate": {"type": "number"},
             },
-            "required": ["tenant_id", "supplier_gstin", "recipient_gstin", "taxable_value", "gst_rate"]
-        }
+            "required": ["supplier_gstin", "recipient_gstin", "taxable_value", "gst_rate"],
+        },
     },
     {
         "name": "reconcile_gstr2b",
@@ -115,12 +324,11 @@ MCP_TOOL_DEFINITIONS = [
         "inputSchema": {
             "type": "object",
             "properties": {
-                "tenant_id": {"type": "string"},
                 "purchase_register": {"type": "array"},
-                "gstr2b_records": {"type": "array"}
+                "gstr2b_records": {"type": "array"},
             },
-            "required": ["tenant_id", "purchase_register", "gstr2b_records"]
-        }
+            "required": ["purchase_register", "gstr2b_records"],
+        },
     },
     {
         "name": "get_compliance_deadlines",
@@ -129,41 +337,82 @@ MCP_TOOL_DEFINITIONS = [
             "type": "object",
             "properties": {
                 "financial_year": {"type": "string", "default": "2026-27"}
-            }
-        }
-    }
+            },
+        },
+    },
 ]
 
+
 # ==============================================================================
-# MCP Tool Execution Functions
+# Hardened MCP Tool Execution Engine
 # ==============================================================================
 
-def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+def execute_mcp_tool(
+    tool_name: str,
+    arguments: Dict[str, Any],
+    context: Optional[VerifiedMcpContext] = None,
+) -> Dict[str, Any]:
+    if context is None:
+        raise SecurityPolicyException(
+            "Verified server identity context is required to execute MCP tools.",
+            status_code=401,
+        )
+
+    policy = TOOL_POLICIES.get(tool_name)
+    if not policy:
+        raise SecurityPolicyException(f"Tool '{tool_name}' is not allowed.", status_code=403)
+
+    # Reject any client attempt to inject privileged identity/tenant parameters
+    forged = [k for k in (arguments or {}).keys() if k in FORBIDDEN_OVERRIDE_KEYS]
+    if forged:
+        raise SecurityPolicyException(
+            f"Forbidden identity/tenant override parameters supplied: {', '.join(sorted(forged))}",
+            status_code=403,
+        )
+
+    if context.role not in policy["allowed_roles"]:
+        raise SecurityPolicyException(
+            f"Role '{context.role}' is not permitted to invoke '{tool_name}'.",
+            status_code=403,
+        )
+
+    _check_rate_limit(f"{context.tenant_id}:{context.uid}:{tool_name}", policy["max_per_minute"])
+    _scan_arguments_for_injection(arguments)
+
+    if policy["requires_human_approval"] and not context.human_approved:
+        return {
+            "status": "approval_required",
+            "tool": tool_name,
+            "tenant_id": context.tenant_id,
+            "message": "Explicit human owner/manager approval is required before executing this sensitive operation.",
+        }
+
+    tenant_id = context.tenant_id
+
     with get_db() as conn:
-        tenant_id = arguments.get("tenant_id")
-        if tenant_id:
-            verify_tenant_access(conn, tenant_id)
+        if tool_name != "get_compliance_deadlines":
+            verify_tenant_access(conn, tenant_id, context.role)
 
         if tool_name == "get_inventory_summary":
-            low_only = arguments.get("low_stock_only", False)
+            low_only = bool(arguments.get("low_stock_only", False))
             query = "SELECT * FROM products WHERE business_id=?"
             if low_only:
                 query += " AND quantity <= reorder_level"
             rows = conn.execute(query, (tenant_id,)).fetchall()
             products = [dict(r) for r in rows]
-            total_items = len(products)
             total_valuation = sum((p["quantity"] * (p["cost_price"] or 0)) for p in products)
             return {
                 "tenant_id": tenant_id,
-                "total_products": total_items,
+                "total_products": len(products),
                 "total_valuation": round(total_valuation, 2),
-                "products": products
+                "products": products,
             }
 
         elif tool_name == "detect_stockout_risk":
             rows = conn.execute(
-                "SELECT id, name, sku, quantity, reorder_level, cost_price, selling_price FROM products WHERE business_id=? AND quantity <= reorder_level",
-                (tenant_id,)
+                "SELECT id, name, sku, quantity, reorder_level, cost_price, selling_price "
+                "FROM products WHERE business_id=? AND quantity <= reorder_level",
+                (tenant_id,),
             ).fetchall()
             risks = []
             for r in rows:
@@ -177,31 +426,35 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any
                     "reorder_level": p["reorder_level"],
                     "shortfall": shortfall,
                     "recommended_reorder_qty": shortfall + (p["reorder_level"] * 2),
-                    "evidence": f"Current stock ({p['quantity']}) has reached or fallen below safety stock ({p['reorder_level']})."
                 })
             return {
                 "tenant_id": tenant_id,
                 "at_risk_count": len(risks),
-                "items_at_risk": risks
+                "items_at_risk": risks,
             }
 
         elif tool_name == "create_purchase_order_draft":
-            supplier = arguments["supplier_name"]
-            items = arguments["items"]
-            total_amount = sum(float(i["quantity"]) * float(i["unit_cost"]) for i in items)
-            po_id = "po_" + str(int(datetime.now(timezone.utc).timestamp()))
-            now_iso = datetime.now(timezone.utc).isoformat()
+            supplier = str(arguments.get("supplier_name") or "").strip()
+            items = arguments.get("items") or []
+            if not supplier or not isinstance(items, list) or len(items) == 0:
+                raise SecurityPolicyException("Invalid purchase order draft payload.", status_code=400)
 
+            total_amount = 0.0
+            for item in items:
+                qty = float(item["quantity"])
+                cost = float(item["unit_cost"])
+                if qty <= 0 or cost < 0:
+                    raise SecurityPolicyException("Item quantity must be > 0 and cost >= 0.", status_code=400)
+                total_amount += qty * cost
+
+            po_id = f"po_{uuid.uuid4().hex[:12]}"
+            now_iso = datetime.now(timezone.utc).isoformat()
             conn.execute(
-                """INSERT INTO purchase_orders (id, business_id, supplier_name, items_json, total_amount, status, created_at)
-                   VALUES (?, ?, ?, ?, ?, 'draft', ?)""",
-                (po_id, tenant_id, supplier, json.dumps(items), total_amount, now_iso)
+                "INSERT INTO purchase_orders (id, business_id, supplier_name, items_json, total_amount, status, created_at) "
+                "VALUES (?, ?, ?, ?, ?, 'draft', ?)",
+                (po_id, tenant_id, supplier, json.dumps(items), total_amount, now_iso),
             )
-            # Log audit
-            conn.execute(
-                "INSERT INTO audit_log (id, business_id, action, entity_type, entity_id, details_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                ("aud_" + po_id, tenant_id, "PO_DRAFT_CREATED", "purchase_order", po_id, json.dumps({"total": total_amount, "supplier": supplier}), now_iso)
-            )
+            _write_mcp_audit(conn, tenant_id, context.uid, "PO_DRAFT_CREATED", "purchase_order", po_id, {"total": total_amount})
             conn.commit()
             return {
                 "order_id": po_id,
@@ -210,37 +463,42 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any
                 "supplier_name": supplier,
                 "total_amount": round(total_amount, 2),
                 "items_count": len(items),
-                "message": "Draft purchase order created. Requires authorized owner/manager approval before execution."
             }
 
         elif tool_name == "approve_purchase_order":
-            order_id = arguments["order_id"]
-            action = arguments["action"]
-            role = arguments.get("approver_role", "")
+            order_id = str(arguments.get("order_id") or "").strip()
+            action = str(arguments.get("action") or "").strip()
+            if not order_id or action not in ("approve", "reject"):
+                raise SecurityPolicyException("Invalid purchase order approval parameters.", status_code=400)
 
-            if role not in ["owner", "manager"]:
-                return {
-                    "success": False,
-                    "error": f"Security Policy Violation: Approvals require 'owner' or 'manager' role. Actor has '{role}'."
-                }
-
-            row = conn.execute("SELECT * FROM purchase_orders WHERE id=? AND business_id=?", (order_id, tenant_id)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM purchase_orders WHERE id=? AND business_id=?",
+                (order_id, tenant_id),
+            ).fetchone()
             if not row:
-                return {"success": False, "error": f"Purchase order '{order_id}' not found."}
+                raise SecurityPolicyException("Purchase order not found for authorized tenant.", status_code=404)
 
             new_status = "approved" if action == "approve" else "rejected"
-            conn.execute("UPDATE purchase_orders SET status=? WHERE id=?", (new_status, order_id))
-            now_iso = datetime.now(timezone.utc).isoformat()
             conn.execute(
-                "INSERT INTO audit_log (id, business_id, action, entity_type, entity_id, details_json, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                ("aud_" + str(int(datetime.now(timezone.utc).timestamp())), tenant_id, f"PO_{new_status.upper()}", "purchase_order", order_id, json.dumps({"role": role}), now_iso)
+                "UPDATE purchase_orders SET status=? WHERE id=? AND business_id=?",
+                (new_status, order_id, tenant_id),
+            )
+            _write_mcp_audit(
+                conn,
+                tenant_id,
+                context.uid,
+                f"PO_{new_status.upper()}",
+                "purchase_order",
+                order_id,
+                {"verified_role": context.role},
             )
             conn.commit()
             return {
                 "success": True,
                 "order_id": order_id,
                 "status": new_status,
-                "approved_by_role": role
+                "approved_by_uid": context.uid,
+                "approved_by_role": context.role,
             }
 
         elif tool_name == "validate_gst_invoice":
@@ -255,157 +513,95 @@ def execute_mcp_tool(tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any
                 supplier_state_code=s_val["state_code"],
                 recipient_state_code=r_val["state_code"],
                 taxable_value=arguments["taxable_value"],
-                rate_percent=arguments["gst_rate"]
+                rate_percent=arguments["gst_rate"],
             )
-            return {
-                "valid": True,
-                "supplier": s_val,
-                "recipient": r_val,
-                "tax_breakdown": breakdown
-            }
+            return {"valid": True, "supplier": s_val, "recipient": r_val, "tax_breakdown": breakdown}
 
         elif tool_name == "reconcile_gstr2b":
-            pr = arguments.get("purchase_register", [])
-            g2b = arguments.get("gstr2b_records", [])
-            result = match_gstr2b(pr, g2b)
-            return result
+            return match_gstr2b(arguments.get("purchase_register", []), arguments.get("gstr2b_records", []))
 
         elif tool_name == "get_compliance_deadlines":
-            fy = arguments.get("financial_year", "2026-27")
-            calendar = get_compliance_calendar(fy)
-            return {"financial_year": fy, "obligations": calendar}
+            fy = str(arguments.get("financial_year", "2026-27"))
+            return {"financial_year": fy, "obligations": get_compliance_calendar(fy)}
 
-        else:
-            raise ValueError(f"Unknown MCP tool: {tool_name}")
+        raise SecurityPolicyException(f"Unknown MCP tool: {tool_name}", status_code=403)
 
 
 # ==============================================================================
-# Model Context Protocol (MCP) Router & AI Plugin Gateway
+# Model Context Protocol (MCP) Router (Authenticated Gateway Only)
 # ==============================================================================
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
 
 mcp_router = APIRouter(tags=["Model Context Protocol (MCP) & External AI Integration"])
+
 
 class McpToolCallRequest(BaseModel):
     tool_name: str
     arguments: Dict[str, Any] = {}
 
-class McpListToolsRequest(BaseModel):
-    cursor: Optional[str] = None
 
 @mcp_router.get("/.well-known/ai-plugin.json")
 def get_ai_plugin_manifest():
-    """Manifest for ChatGPT Custom Actions, Gemini Extensions, and Claude MCP Connect."""
+    """Manifest declares bearer authentication required (never auth: none)."""
     return {
         "schema_version": "v1",
         "name_for_human": "DukaanMitra AI Business OS",
         "name_for_model": "dukaanmitra_business_os",
         "description_for_human": "Manage retail store inventory, record Udhaar Khata, and run WhatsApp marketing using DukaanMitra.",
-        "description_for_model": "Plugin and MCP toolset allowing users to manage MSME retail shops. Supports checking stockouts, recording voice/text Khata udhaar, running supplier Mandi price arbitrage, and sending WhatsApp offers via DukaanMitra.",
-        "auth": {"type": "none"},
+        "description_for_model": "Authenticated MCP toolset for MSME retail shops with strict tenant scoping and maker-checker approvals.",
+        "auth": {"type": "service_http", "authorization_type": "bearer"},
         "api": {
             "type": "openapi",
-            "url": "https://api.dukaanmitra.in/openapi.json"
+            "url": "https://api.dukaanmitra.in/openapi.json",
         },
         "logo_url": "https://dukaanmitra.in/logo.svg",
         "contact_email": "support@dukaanmitra.in",
-        "legal_info_url": "https://dukaanmitra.in/terms"
+        "legal_info_url": "https://dukaanmitra.in/terms",
     }
+
 
 @mcp_router.post("/api/v1/mcp/tools/list")
 @mcp_router.get("/api/v1/mcp/tools/list")
-def list_mcp_tools():
-    """Returns available Model Context Protocol (MCP) tools for external LLM grounding."""
-    extended_tools = list(MCP_TOOL_DEFINITIONS)
-    extended_tools.extend([
-        {
-            "name": "get_magic_insights",
-            "description": "The 'Magic Button' (Aaj ki AI Insights). Returns low stock reorders, missed regular customers, and Hinglish WhatsApp ready offers.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "tenant_id": {"type": "string", "description": "Business ID of the shop"}
-                },
-                "required": ["tenant_id"]
-            }
-        },
-        {
-            "name": "record_voice_transaction",
-            "description": "Processes voice or text bookkeeping command (e.g. 'Mishra ji ne 5kg daal udhaar li' or 'Sharma ji ne 500 jama kiye') and updates digital ledger.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "tenant_id": {"type": "string", "description": "Business ID of the shop"},
-                    "voice_text": {"type": "string", "description": "Hindi or Hinglish natural speech command"}
-                },
-                "required": ["tenant_id", "voice_text"]
-            }
-        },
-        {
-            "name": "get_supplier_mandi_arbitrage",
-            "description": "Compares shop's current purchase costs against local Mandi wholesale benchmark rates to identify margin savings.",
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "tenant_id": {"type": "string", "description": "Business ID of the shop"}
-                },
-                "required": ["tenant_id"]
-            }
-        }
-    ])
+def list_mcp_tools(
+    x_mcp_context: Optional[str] = Header(default=None),
+    x_mcp_signature: Optional[str] = Header(default=None),
+):
+    """Returns allowed MCP tools filtered by the caller's verified role."""
+    try:
+        ctx = verify_signed_mcp_context(x_mcp_context, x_mcp_signature)
+    except SecurityPolicyException as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
+
+    allowed_tools = [
+        t for t in MCP_TOOL_DEFINITIONS
+        if ctx.role in TOOL_POLICIES.get(t["name"], {}).get("allowed_roles", frozenset())
+    ]
     return {
-        "tools": extended_tools,
+        "tools": allowed_tools,
         "protocolVersion": "2024-11-05",
-        "serverInfo": {
-            "name": "dukaanmitra-mcp-gateway",
-            "version": "1.0.0"
-        }
+        "serverInfo": {"name": "dukaanmitra-mcp-gateway", "version": "2.0.0"},
     }
 
-@mcp_router.post("/api/v1/mcp/tools/call")
-def call_mcp_tool(body: McpToolCallRequest):
-    """Executes a tool call submitted by Gemini, ChatGPT, Claude or Antigravity."""
-    try:
-        # Check Core Brain tools
-        if body.tool_name in ["get_magic_insights", "record_voice_transaction", "get_supplier_mandi_arbitrage"]:
-            import core_brain
-            tenant_id = body.arguments.get("tenant_id", "default")
-            with get_db() as conn:
-                if body.tool_name == "get_magic_insights":
-                    reorders = core_brain.CoreBrainEngine.detect_urgent_reorders(conn, tenant_id)
-                    freqs = core_brain.CoreBrainEngine.calculate_customer_frequencies(conn, tenant_id)
-                    missed = core_brain.CoreBrainEngine.detect_missed_customers(freqs)
-                    offers = core_brain.CoreBrainEngine.generate_ready_offers(missed, "DukaanMitra Store")
-                    return {
-                        "content": [{
-                            "type": "text",
-                            "text": json.dumps({
-                                "urgent_reorders": reorders,
-                                "missed_customers": missed,
-                                "ready_offers": offers
-                            }, ensure_ascii=False)
-                        }]
-                    }
-                elif body.tool_name == "record_voice_transaction":
-                    voice_text = body.arguments.get("voice_text", "")
-                    res = core_brain.VoiceBookkeepingParser.parse_speech_command(conn, tenant_id, voice_text)
-                    conn.commit()
-                    return {"content": [{"type": "text", "text": res["reply"], "details": res}]}
-                elif body.tool_name == "get_supplier_mandi_arbitrage":
-                    arb = core_brain.SupplierRateAnalyzer.analyze_margins_and_savings(conn, tenant_id)
-                    return {"content": [{"type": "text", "text": json.dumps(arb, ensure_ascii=False)}]}
 
-        res = execute_mcp_tool(body.tool_name, body.arguments)
+@mcp_router.post("/api/v1/mcp/tools/call")
+def call_mcp_tool(
+    body: McpToolCallRequest,
+    x_mcp_context: Optional[str] = Header(default=None),
+    x_mcp_signature: Optional[str] = Header(default=None),
+):
+    """Executes an MCP tool strictly bound to the verified server identity context."""
+    try:
+        ctx = verify_signed_mcp_context(x_mcp_context, x_mcp_signature)
+        res = execute_mcp_tool(body.tool_name, body.arguments, context=ctx)
         return {
             "content": [{
                 "type": "text",
-                "text": json.dumps(res, ensure_ascii=False)
+                "text": json.dumps(res, ensure_ascii=False),
             }]
         }
-    except Exception as e:
-        return {
-            "isError": True,
-            "content": [{"type": "text", "text": f"MCP execution error: {str(e)}"}]
-        }
+    except SecurityPolicyException as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
+    except Exception:
+        raise HTTPException(status_code=500, detail="MCP tool execution failed.")
