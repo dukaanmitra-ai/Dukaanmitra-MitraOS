@@ -1,0 +1,21 @@
+SKU,Item Name,Category,Unit,Cost Price (INR),Selling Price MRP (INR),GST (%),Margin (%),Current Stock,Reorder Level
+DM-1001,Aashirvaad Shudh Chakki Atta 5kg,Staples,Pack,215,245,0,13.95,42,10
+DM-1002,India Gate Basmati Rice 5kg,Staples,Bag,440,510,5,15.91,28,8
+DM-1003,Tata Sampann Toor Dal 1kg,Pulses,Pack,162,190,0,17.28,35,10
+DM-1004,Fortune Kachi Ghani Mustard Oil 1L,Edible Oil,Bottle,138,162,5,17.39,60,15
+DM-1005,Amul Taaza Toned Milk 1L,Dairy,Pack,50,56,0,12.00,48,12
+DM-1006,Refined Sugar Loose 1kg,Staples,Kg,40,46,5,15.00,90,20
+DM-1007,Tata Tea Gold 500g,Beverages,Pack,265,305,5,15.09,24,8
+DM-1008,Parle-G Gold Biscuits 1kg,Snacks,Pack,78,95,18,21.79,55,15
+DM-1009,Surf Excel Quick Wash 1kg,Home Care,Pack,185,220,18,18.92,30,10
+DM-1010,Dettol Original Soap 4x125g,Personal Care,Bundle,158,192,18,21.52,40,12
+DM-1011,Maggi 2-Minute Noodles 12-Pack,Instant Food,Pack,142,168,12,18.31,34,10
+DM-1012,MDH Garam Masala 100g,Spices,Box,74,92,5,24.32,45,10
+DM-1013,Colgate Strong Teeth 200g,Personal Care,Tube,96,118,18,22.92,38,10
+DM-1014,Haldiram Aloo Bhujia 400g,Snacks,Pack,82,100,12,21.95,29,8
+DM-1015,Amul Butter 500g,Dairy,Pack,262,285,12,8.78,18,6
+DM-1016,Vim Dishwash Liquid Gel 750ml,Home Care,Bottle,146,179,18,22.60,26,8
+DM-1017,Tata Salt Vacuum Evaporated 1kg,Staples,Pack,23,28,0,21.74,110,25
+DM-1018,Kissan Fresh Tomato Ketchup 850g,Condiments,Pouch,105,130,12,23.81,22,6
+DM-1019,Parachute Coconut Oil 500ml,Personal Care,Bottle,172,208,18,20.93,31,8
+DM-1020,Red Label Natural Care Tea 500g,Beverages,Pack,278,320,5,15.11,19,6

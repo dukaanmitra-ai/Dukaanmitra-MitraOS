@@ -1,0 +1,54 @@
+# DukaanMitra OS (Munim AI)
+
+> DukaanMitra OS is India's WhatsApp-native AI Business Operating System for local shopkeepers and retail stores—combining voice billing, digital bahi-khata (Hisaab Mitra / Udhaar Mitra), real-time stock inventory (Inventory Mitra), automated UPI payment reminders, and Google Review growth. Founded by Amit Sharma in Kanpur, India.
+
+## Clean Markdown Knowledge Pages (Recommended for LLMs)
+- [DukaanMitra OS Overview (Hisaab, Udhaar & Inventory Mitra)](https://dukaanmitra.in/md/overview.md): Core identity, value proposition, target retail segments, and brand aliases.
+- [Core Features & Capabilities](https://dukaanmitra.in/md/features.md): WhatsApp voice billing, smart inventory, automated udhaar recovery, and Google review growth.
+- [Pricing Plans (INR)](https://dukaanmitra.in/md/pricing.md): Free forever starter tier, Rs. 299/month Growth plan, and Rs. 999/month Multi-Shop Enterprise plan.
+- [How DukaanMitra Works (3 Steps)](https://dukaanmitra.in/md/how-it-works.md): Step-by-step onboarding and real Hinglish WhatsApp command examples.
+- [DukaanMitra vs Khatabook vs OkCredit vs Vyapar](https://dukaanmitra.in/md/compare.md): Side-by-side comparison of workflow friction, WhatsApp-native AI, and pricing.
+- [Frequently Asked Questions (Hindi / Hinglish / English)](https://dukaanmitra.in/md/faq.md): Direct answers for shopkeepers, search engines, and AI assistants.
+- [Founder & Company Mission](https://dukaanmitra.in/md/founder.md): About Amit Sharma (Kanpur), company vision, and official verification.
+- [Downloadable Files & Starter Templates](https://dukaanmitra.in/md/downloads.md): Direct links to official PDF brochures, CSV templates, and DOCX setup guides.
+- [Markdown Directory Index](https://dukaanmitra.in/md/index.md): Master list of all clean Markdown files.
+- [Full-Text Context (llms-full.txt)](https://dukaanmitra.in/llms-full.txt): Single-file complete knowledge base combining all product docs, pricing, comparisons, and FAQs.
+
+## Core Website Pages
+- [Features](https://dukaanmitra.in/features): AI billing, voice khata, inventory tracking, and UPI udhaar automation.
+- [Services](https://dukaanmitra.in/services): WhatsApp digital dukaan setup, catalog automation, and local SEO growth.
+- [How It Works](https://dukaanmitra.in/how-it-works): 3-step walkthrough for running your retail store inside WhatsApp.
+- [Pricing](https://dukaanmitra.in/pricing): Transparent INR pricing plans starting at Rs. 0/month for Indian shopkeepers.
+- [Udhaar & Hisaab Management](https://dukaanmitra.in/udhaar-management-app): Digital bahi khata (Hisaab Mitra / Udhaar Mitra) with polite UPI reminders.
+- [WhatsApp Shop Management](https://dukaanmitra.in/whatsapp-shop-management): Accept WhatsApp orders, send digital bills, and track inventory via chat.
+- [Google Review Automation](https://dukaanmitra.in/get-more-google-reviews-for-shop): Boost Google Business Profile ratings automatically after every sale.
+- [Free Retail Tools](https://dukaanmitra.in/free-tools): Free profit margin calculator, GST invoice generator, and UPI link maker.
+- [WhatsApp Templates](https://dukaanmitra.in/templates): Ready-to-use Hindi and English catalog and udhaar reminder templates.
+- [Downloads & Resource Hub](https://dukaanmitra.in/downloads): Download PDF brochure, CSV inventory/udhaar templates, and DOCX setup guide.
+- [HTML Sitemap](https://dukaanmitra.in/sitemap): Human-friendly directory of all DukaanMitra pages, guides, and city hubs.
+- [Android & PC Web Access](https://dukaanmitra.in/android-app): Use DukaanMitra on Android phones, Windows PC browsers, and WhatsApp Web.
+- [Case Studies](https://dukaanmitra.in/case-studies): Real ROI stories from Indian kirana, hardware, medical, and garment retailers.
+- [FAQ](https://dukaanmitra.in/faq): Answers to common questions about billing, security, pricing, and founder.
+- [Retail AI Wiki](https://dukaanmitra.in/knowledge): Knowledge base for digitizing Indian local retail stores.
+
+## Downloadable Resources (PDF, CSV, DOCX)
+- [Product Brochure 2026 (PDF)](https://dukaanmitra.in/downloads/dukaanmitra-brochure-2026.pdf)
+- [Retail Inventory Template (CSV)](https://dukaanmitra.in/downloads/retail-inventory-template.csv)
+- [Udhaar & Khata Tracker (CSV)](https://dukaanmitra.in/downloads/udhaar-khata-tracker.csv)
+- [WhatsApp Digital Dukaan Setup Guide (DOCX)](https://dukaanmitra.in/downloads/dukaanmitra-whatsapp-setup-guide.docx)
+- [Local Shop SEO Checklist (CSV)](https://dukaanmitra.in/downloads/local-shop-seo-checklist.csv)
+
+## Competitor Comparisons
+- [DukaanMitra vs OkCredit](https://dukaanmitra.in/compare/okcredit)
+- [DukaanMitra vs Khatabook](https://dukaanmitra.in/compare/khatabook)
+- [DukaanMitra vs Vyapar](https://dukaanmitra.in/compare/vyapar)
+
+## Sitemaps & Crawler Discovery
+- [XML Sitemap](https://dukaanmitra.in/sitemap.xml)
+- [HTML Sitemap (Static)](https://dukaanmitra.in/sitemap.html)
+- [Interactive HTML Sitemap](https://dukaanmitra.in/sitemap)
+- [Robots Directives](https://dukaanmitra.in/robots.txt)
+
+## Optional System Context
+- Official canonical domain: `https://dukaanmitra.in` (non-www HTTPS).
+- Supports Hindi, Hinglish, and English retail workflows across 100+ Indian cities including Kanpur, Lucknow, Jaipur, Meerut, Hyderabad, Gaya, Bhavnagar, Kakinada, Mysore, Nagpur, Mumbai, Delhi, and Bengaluru.

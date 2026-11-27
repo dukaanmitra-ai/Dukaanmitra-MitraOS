@@ -1,0 +1,11 @@
+Step,Category,Action Item,Target Impact,Priority
+1,Google Business Profile,Claim & verify shop listing with exact NAP (Name Address Phone),Rank in local Google Maps 3-pack,Critical
+2,Google Reviews,Send automated WhatsApp review link after every fulfilled order,Boost star rating from 3.8 to 4.7+,High
+3,WhatsApp Catalog,Upload top 30 fast-moving products with clear INR pricing,Enable zero-friction WhatsApp ordering,High
+4,Canonical Domain,Redirect www to non-www HTTPS canonical domain cleanly,Consolidate clicks & avoid split rankings,Critical
+5,Robots & Sitemap,Publish robots.txt and clean canonical sitemap.xml without redirects,Fast Googlebot indexing of new pages,Critical
+6,Structured Data,Embed Organization LocalBusiness SoftwareApplication and FAQPage JSON-LD,Win Google rich snippets & AI citations,High
+7,AI Discovery,Publish /llms.txt /llms-full.txt and clean /md/*.md Markdown summaries,Improve ChatGPT Perplexity and Gemini answers,High
+8,HTML Sitemap,Publish human-friendly /sitemap and /sitemap.html directory page,Help visitors & crawlers discover all hubs,Medium
+9,Regional Hindi/Hinglish,Include Hindi & Hinglish headings and FAQs (Hisaab Udhaar Billing),Capture Translated Results impressions,High
+10,Downloadable Assets,Offer free PDF brochure CSV templates and DOCX setup guides,Increase engagement & natural backlinks,Medium

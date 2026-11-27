@@ -1,67 +1,72 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
-  "name": "dukaanmitra-in",
-  "framework": "vite",
-  "installCommand": "npm --prefix apps/mitra-os-web install",
-  "buildCommand": "npm --prefix apps/mitra-os-web run build",
-  "outputDirectory": "apps/mitra-os-web/dist",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.dukaanmitra.in"
+        }
+      ],
+      "destination": "https://dukaanmitra.in/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
-      "source": "/api/v1/:path*",
-      "destination": "https://api.dukaanmitra.in/api/v1/:path*"
-    },
-    {
-      "source": "/ondc/:path*",
-      "destination": "https://api.dukaanmitra.in/ondc/:path*"
-    },
-    {
-      "source": "/whatsapp/:path*",
-      "destination": "https://api.dukaanmitra.in/whatsapp/:path*"
-    },
-    {
-      "source": "/openwa/:path*",
-      "destination": "https://whatsapp.dukaanmitra.in/:path*"
-    },
-    {
-      "source": "/webhook",
-      "destination": "https://api.dukaanmitra.in/webhook"
-    },
-    {
-      "source": "/admin/:path*",
-      "destination": "https://api.dukaanmitra.in/admin/:path*"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api/|assets/|downloads/|md/|robots\\.txt|sitemap\\.xml|sitemap\\.html|llms\\.txt|llms-full\\.txt|manifest\\.json|favicon\\.svg|logo\\.svg|city-map\\.json|.*\\.(?:js|css|png|jpg|jpeg|webp|svg|ico|xml|txt|md|pdf|csv|docx|json|html)$).*)",
       "destination": "/index.html"
     }
   ],
   "headers": [
-    {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
+        }
+      ]
+    },
+    {
+      "source": "/md/(.*)\\.md",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/markdown; charset=utf-8"
         },
         {
-          "key": "X-Frame-Options",
-          "value": "DENY"
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(llms\\.txt|llms-full\\.txt|robots\\.txt)",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
         },
         {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/downloads/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
         }
       ]
     }

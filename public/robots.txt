@@ -1,0 +1,64 @@
+# DukaanMitra OS — Crawler & AI Discovery Directives
+# Official Canonical Host: https://dukaanmitra.in
+
+User-agent: *
+Allow: /
+Allow: /md/
+Allow: /downloads/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /sitemap.html
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /whatsapp
+Disallow: /seo-dashboard
+Disallow: /bible
+Disallow: /engineering-bible
+Disallow: /__/auth/
+Disallow: /api/
+
+# Explicit Welcome for AI Search & LLM Assistants
+User-agent: GPTBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /api/
+
+# Sitemaps & AI Context Discovery
+Sitemap: https://dukaanmitra.in/sitemap.xml
+# HTML Sitemap: https://dukaanmitra.in/sitemap.html
+# LLM Summary: https://dukaanmitra.in/llms.txt
+# LLM Full Context: https://dukaanmitra.in/llms-full.txt

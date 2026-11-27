@@ -1,0 +1,208 @@
+# DukaanMitra OS — Complete Full-Text Context for AI & LLMs
+
+> Official full-text knowledge document for **DukaanMitra OS** and **Munim AI** (`https://dukaanmitra.in`).
+> Last updated: 2026-11-27
+
+---
+
+# DukaanMitra OS — Platform Overview
+
+> **DukaanMitra OS** (powered by **Munim AI**) is India's WhatsApp-native AI Business Operating System for local shopkeepers, kirana stores, wholesalers, and inventory-driven retailers.
+
+## Brand Names & Common Queries
+Users across India search for DukaanMitra under several everyday retail terms, all referring to the same platform at `https://dukaanmitra.in`:
+- **DukaanMitra / DukaanMitra OS / Dukan Mitra**: Official platform name.
+- **Munim AI / AI Munim**: Built-in conversational Hinglish/Hindi/English WhatsApp assistant.
+- **Hisaab Mitra / Udhaar Mitra**: Digital bahi-khata and automated UPI credit recovery module.
+- **Inventory Mitra / Sales Mitra**: Real-time stock tracking, low-stock alerts, and daily sales reporting.
+- **WhatsApp Digital Dukaan**: Zero-download storefront, catalog sharing, and WhatsApp ordering flow.
+
+## Who Uses DukaanMitra?
+- Kirana & General Stores
+- Medical Stores & Pharmacies
+- Hardware, Paint & Electrical Shops
+- Mobile & Accessories Stores
+- Garment, Footwear & Jewellery Shops
+- Auto Parts, Electronics & Sweet Shops
+
+## Access Across Devices (Mobile & PC)
+DukaanMitra works natively inside **WhatsApp** (Android, iOS, and WhatsApp Web) as well as via browser at `https://dukaanmitra.in/dashboard` on Windows PC, Mac, and tablets—no heavy desktop ERP installation required.
+
+---
+
+# DukaanMitra OS — Core Features
+
+## 1. Voice & Chat Billing inside WhatsApp
+- Log cash, UPI, or credit sales by typing or sending a voice note in Hindi, Hinglish, or English (e.g., *"Sharma ji 2kg chini 120 udhaar"*).
+- Instantly generate shareable digital customer bills and GST-ready invoices.
+
+## 2. Automated Udhaar (Khata) Recovery
+- Track customer-wise pending balances and full transaction history.
+- Dispatch polite, scheduled WhatsApp reminders with embedded **UPI payment links**—helping shopkeepers recover credit up to 3x faster without awkward phone calls.
+
+## 3. Real-Time Inventory & Stock Alerts
+- Every billed item automatically deducts from live stock counts.
+- Receive proactive low-stock notifications before top-selling SKUs run out.
+- Import starter product sheets using standard CSV files.
+
+## 4. WhatsApp Digital Dukaan & Ordering
+- Publish a clean product catalog and take direct customer orders over WhatsApp.
+- Confirm orders, send invoices, and track repeat buyers from one chat thread.
+
+## 5. Google Business Profile Review Automation
+- Automatically follow up with happy customers on WhatsApp with a 1-tap Google review link to grow local map rankings and footfall.
+
+## 6. Daily Profit & Sales Analytics
+- Ask *"Aaj ka hisaab batao"* anytime for cash vs UPI totals, top items, and pending receivables.
+
+---
+
+# DukaanMitra OS — Pricing Plans (INR)
+
+All plans work on Mobile WhatsApp, Android, and Desktop/PC browsers with zero hardware lock-in.
+
+| Plan | Price (INR) | Ideal For | Key Inclusions |
+| :--- | :--- | :--- | :--- |
+| **Starter** | ₹0 / month (Free Forever) | Small kirana & single-counter shops | Up to 100 monthly WhatsApp entries, digital khata, basic bills, free CSV templates |
+| **Growth** | ₹299 / month | Growing retail & wholesale stores | Unlimited billing & udhaar, Voice Munim AI, automated UPI reminders, live inventory alerts, Google review booster |
+| **Enterprise** | ₹999 / month | Multi-branch shops & distributors | Multi-store sync, staff access controls, GST export packs, priority WhatsApp support, ONDC catalog readiness |
+
+Visit `https://dukaanmitra.in/pricing` to compare plans or start instantly at `https://dukaanmitra.in/demo`.
+
+---
+
+# How DukaanMitra Works
+
+## Step 1: Activate Your Shop
+Open `https://dukaanmitra.in/demo` or sign in with Google/Phone to initialize your digital store workspace in under 2 minutes.
+
+## Step 2: Talk to Munim AI on WhatsApp
+Use natural everyday shopkeeper phrasing:
+- **Cash Sale:** `"Ramesh 5kg Atta 245 cash"`
+- **Credit / Udhaar:** `"Suresh ko 850 ka udhaar diya"`
+- **Payment Received:** `"Suresh ne 500 UPI bheja"`
+- **Stock Update:** `"20 packet Amul Milk stock mein add karo"`
+- **Daily Summary:** `"Aaj ki total bikri aur udhaar batao"`
+
+## Step 3: Automate Reminders & Growth
+DukaanMitra updates your web dashboard in real time, sends polite UPI collection reminders on due dates, and requests Google Reviews from satisfied buyers.
+
+---
+
+# Competitor Comparison — DukaanMitra OS vs Alternatives
+
+| Capability | DukaanMitra OS (Munim AI) | Khatabook / OkCredit | Vyapar / Traditional ERP |
+| :--- | :--- | :--- | :--- |
+| **Interface** | WhatsApp-native + Web (Mobile & PC) | Separate mobile app | Heavy desktop/mobile forms |
+| **Data Entry Speed** | Hinglish voice notes & chat (2 seconds) | Manual form typing | Multi-screen manual entry |
+| **Billing + Inventory + Khata** | Unified in one AI workflow | Primarily ledger/khata focused | Complex setup & learning curve |
+| **Automated UPI Reminders** | Smart conversational WhatsApp nudges | Basic SMS / app reminder | Manual trigger |
+| **Google Review Automation** | Built-in post-sale automation | Not included | Not included |
+| **Desktop / PC Access** | Instant browser & WhatsApp Web | Limited | Windows install required |
+
+Explore full comparison pages:
+- https://dukaanmitra.in/compare/khatabook
+- https://dukaanmitra.in/compare/okcredit
+- https://dukaanmitra.in/compare/vyapar
+
+---
+
+# DukaanMitra OS — Frequently Asked Questions
+
+### Q1. DukaanMitra kya hai? (What is DukaanMitra?)
+DukaanMitra OS India ka WhatsApp-first AI Business Operating System hai jo local shopkeepers ko billing, udhaar khata (Hisaab Mitra), stock inventory (Inventory Mitra), aur WhatsApp ordering bina kisi complex software ke manage karne mein madad karta hai.
+
+### Q2. Who is the founder of DukaanMitra?
+DukaanMitra was founded by **Amit Sharma** (Dev Kanpur), an Indian software engineer from Kanpur, Uttar Pradesh, focused on bringing practical AI automation to India's neighbourhood retail stores.
+
+### Q3. Kya DukaanMitra free hai?
+Haan, DukaanMitra ka Starter plan ₹0/month (Free Forever) hai. Unlimited Voice Munim AI, inventory alerts, aur automated UPI reminders ke liye Growth plan ₹299/month se shuru hota hai.
+
+### Q4. Can I use DukaanMitra on PC / Desktop without downloading software?
+Yes. You can open `https://dukaanmitra.in/dashboard` on any Windows PC, Mac, or Chromebook browser, or use WhatsApp Web directly—no desktop installer needed.
+
+### Q5. Kya mera shop data safe aur private rehta hai?
+Haan. Har shop ka ledger isolated encrypted cloud storage mein store hota hai aur sirf verified store owner account se access hota hai.
+
+### Q6. Where can I download brochures and free CSV/DOCX templates?
+Visit `https://dukaanmitra.in/downloads` to download the official 2026 PDF Brochure, Retail Inventory CSV template, Udhaar Khata Tracker CSV, Local Shop SEO Checklist CSV, and WhatsApp Setup Guide DOCX.
+
+---
+
+# Founder & Company — DukaanMitra
+
+- **Brand / Company:** DukaanMitra (DukaanMitra OS & Munim AI)
+- **Founder:** Amit Sharma (Kanpur, Uttar Pradesh, India)
+- **Official Domain:** `https://dukaanmitra.in`
+- **Mission:** Empower millions of Indian kirana, pharmacy, hardware, apparel, and local retail merchants to compete with quick-commerce through effortless WhatsApp-native AI accounting, inventory, and customer retention.
+- **Official Links:**
+  - LinkedIn: https://www.linkedin.com/company/dukaanmitra/
+  - YouTube: https://youtube.com/@officialdukaanmitra
+  - Founder Page: https://dukaanmitra.in/founder
+  - Official Domain Verification: https://dukaanmitra.in/official-domain
+
+---
+
+# Official Downloadable Files (PDF, CSV, DOCX)
+
+All resources are free to download from `https://dukaanmitra.in/downloads`:
+
+1. **DukaanMitra Official Product Brochure (PDF):** `https://dukaanmitra.in/downloads/dukaanmitra-brochure-2026.pdf`
+2. **Indian Retail & Kirana Inventory Template (CSV):** `https://dukaanmitra.in/downloads/retail-inventory-template.csv`
+3. **Customer Udhaar & Khata Recovery Tracker (CSV):** `https://dukaanmitra.in/downloads/udhaar-khata-tracker.csv`
+4. **WhatsApp Digital Dukaan Onboarding Guide (DOCX):** `https://dukaanmitra.in/downloads/dukaanmitra-whatsapp-setup-guide.docx`
+5. **Local Shop SEO & Google Maps Checklist (CSV):** `https://dukaanmitra.in/downloads/local-shop-seo-checklist.csv`
+
+---
+
+## Programmatic Retail Solution Guides
+- [Retail Store Software](https://dukaanmitra.in/p/retail-store-software)
+- [Bahi Khata Alternative](https://dukaanmitra.in/p/bahi-khata-alternative)
+- [Inventory Management Retail](https://dukaanmitra.in/p/inventory-management-retail)
+- [Increase Google Business Rating](https://dukaanmitra.in/p/increase-google-business-rating)
+- [Whatsapp Review Automation](https://dukaanmitra.in/p/whatsapp-review-automation)
+- [Dukaan Online Kaise Laye](https://dukaanmitra.in/p/dukaan-online-kaise-laye)
+- [Apni Dukan Ko Digital Kaise Banaye](https://dukaanmitra.in/p/apni-dukan-ko-digital-kaise-banaye)
+- [Retail Dukaan Ke Liye Ai Billing Software](https://dukaanmitra.in/p/retail-dukaan-ke-liye-ai-billing-software)
+- [Whatsapp Se Saman Kaise Beche](https://dukaanmitra.in/p/whatsapp-se-saman-kaise-beche)
+- [Retail Store Ko Grow Kaise Kare](https://dukaanmitra.in/p/retail-store-ko-grow-kaise-kare)
+- [Best Billing Software For Mobile Shop](https://dukaanmitra.in/p/best-billing-software-for-mobile-shop)
+- [Garment Shop Software Free](https://dukaanmitra.in/p/garment-shop-software-free)
+- [Hardware Shop Billing App](https://dukaanmitra.in/p/hardware-shop-billing-app)
+- [Medical Store Software India](https://dukaanmitra.in/p/medical-store-software-india)
+- [Supermarket Billing Software Free Download](https://dukaanmitra.in/p/supermarket-billing-software-free-download)
+- [Jewellery Shop Management Software](https://dukaanmitra.in/p/jewellery-shop-management-software)
+- [Sweet Shop Billing Software](https://dukaanmitra.in/p/sweet-shop-billing-software)
+- [Footwear Shop Software](https://dukaanmitra.in/p/footwear-shop-software)
+- [Electronics Shop Billing App](https://dukaanmitra.in/p/electronics-shop-billing-app)
+- [Retail Khata App For Pc](https://dukaanmitra.in/p/retail-khata-app-for-pc)
+- [Bina Internet Ke Billing Machine](https://dukaanmitra.in/p/bina-internet-ke-billing-machine)
+- [Whatsapp Par Customer Ko Bill Kaise Bheje](https://dukaanmitra.in/p/whatsapp-par-customer-ko-bill-kaise-bheje)
+- [Auto Parts Shop Free Billing](https://dukaanmitra.in/p/auto-parts-shop-free-billing)
+- [Grocery Shop Inventory Excel](https://dukaanmitra.in/p/grocery-shop-inventory-excel)
+- [Retail Shop Accounting Software](https://dukaanmitra.in/p/retail-shop-accounting-software)
+- [Free Gst Billing Software](https://dukaanmitra.in/p/free-gst-billing-software)
+- [Mobile Accessories Shop Software](https://dukaanmitra.in/p/mobile-accessories-shop-software)
+- [Retail Shop Profit Calculator](https://dukaanmitra.in/p/retail-shop-profit-calculator)
+- [Whatsapp Catalog Maker App](https://dukaanmitra.in/p/whatsapp-catalog-maker-app)
+- [Digital Payment Tracker For Shop](https://dukaanmitra.in/p/digital-payment-tracker-for-shop)
+
+## Retail Growth Blog & Hindi/Hinglish Guides
+- [Udhaar Ka Hisaab Kaise Rakhe](https://dukaanmitra.in/blog/udhaar-ka-hisaab-kaise-rakhe)
+- [Retail Shop Daily Sales System](https://dukaanmitra.in/blog/retail-shop-daily-sales-system)
+- [Best Billing Software For Small Shop](https://dukaanmitra.in/blog/best-billing-software-for-small-shop)
+- [Kanpur Me Shop Ko Online Kaise Laaye](https://dukaanmitra.in/blog/kanpur-me-shop-ko-online-kaise-laaye)
+- [Ai Sandboxing Secure Shop Data](https://dukaanmitra.in/blog/ai-sandboxing-secure-shop-data)
+- [Google Business Profile Kaise Banaye](https://dukaanmitra.in/blog/google-business-profile-kaise-banaye)
+- [Gbp Suspend Kyun Hota Hai](https://dukaanmitra.in/blog/gbp-suspend-kyun-hota-hai)
+- [Whatsapp Se Order Kaise Le](https://dukaanmitra.in/blog/whatsapp-se-order-kaise-le)
+- [Local Business Ko Customer Kaise Mile](https://dukaanmitra.in/blog/local-business-ko-customer-kaise-mile)
+- [Manage Retail Store Digitally India 2026](https://dukaanmitra.in/blog/manage-retail-store-digitally-india-2026)
+- [Bahi Khata Ai Se Kaise Manage Karein](https://dukaanmitra.in/blog/bahi-khata-ai-se-kaise-manage-karein)
+- [Whatsapp Munim Vs Human Munim](https://dukaanmitra.in/blog/whatsapp-munim-vs-human-munim)
+
+## Backend API Endpoints
+- `GET /api/health` -> `{ "status": "ok" }`
+- `POST /api/munim-chat` -> Interactive Munim AI website assistant endpoint
+- `POST /api/create-order` -> Initializes Razorpay checkout order in INR
+- `POST /api/verify-payment` -> Verifies Razorpay HMAC-SHA256 payment signature

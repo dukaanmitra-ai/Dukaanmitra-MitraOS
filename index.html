@@ -1,958 +1,151 @@
-<!doctype html>
-<html lang="hi">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Mitra System — Business ko AI se jodte hain</title>
-<meta name="description" content="Mitra System ek AI product studio + platform hai. DukaanMitra, StoreMitra, MitraOS, AgentMitra aur Physical AI — web development, agent bots, AI automation aur physical systems, sab ek hi system me. Kanpur se shuru, India ke liye bana." />
-<meta property="og:type" content="website" />
-<meta property="og:site_name" content="Mitra System" />
-<meta property="og:title" content="Mitra System — Business ko AI se jodte hain" />
-<meta property="og:description" content="Website se dukaan tak. WhatsApp se machine tak. DukaanMitra, StoreMitra, MitraOS, AgentMitra aur Physical AI — ek hi system." />
-<meta name="twitter:card" content="summary" />
-<meta name="theme-color" content="#f6f2f8" />
-<link rel="icon" type="image/svg+xml" href="favicon.svg" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<style>
-  :root{
-    --bg:#f6f2f8;
-    --bg-soft:#fbf8fd;
-    --ink:#171225;
-    --ink-2:#2c2340;
-    --muted:#6f657c;
-    --line:rgba(23,18,37,.1);
-    --line-strong:rgba(23,18,37,.16);
-    --card:rgba(255,255,255,.74);
-    --white:#fff;
-    --pink:#e473a5;
-    --violet:#8b5cf6;
-    --blue:#6ec6ff;
-    --green:#25d366;
-    --green-dark:#128c4a;
-    --grad:linear-gradient(100deg,#e473a5 0%,#8b5cf6 52%,#6ec6ff 100%);
-    --grad-soft:linear-gradient(135deg,rgba(228,115,165,.16),rgba(139,92,246,.14),rgba(110,198,255,.16));
-    --shadow-sm:0 2px 8px rgba(23,18,37,.06);
-    --shadow:0 14px 40px rgba(23,18,37,.1);
-    --shadow-lg:0 28px 80px rgba(23,18,37,.16);
-    --r:16px;
-    --r-lg:26px;
-    --ease:cubic-bezier(.22,.61,.36,1);
-    --max:1180px;
-  }
-  *{box-sizing:border-box}
-  html{scroll-behavior:smooth}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font-family:Inter,"Noto Sans Devanagari",system-ui,-apple-system,Segoe UI,sans-serif;
-    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;
-  }
-  body::before{
-    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:
-      radial-gradient(700px 420px at 8% -6%,rgba(228,115,165,.18),transparent 62%),
-      radial-gradient(760px 480px at 96% 4%,rgba(110,198,255,.2),transparent 60%),
-      radial-gradient(600px 500px at 50% 100%,rgba(139,92,246,.12),transparent 62%);
-  }
-  h1,h2,h3,h4,.display{font-family:Sora,"Noto Sans Devanagari",sans-serif;letter-spacing:-.03em;line-height:1.06;margin:0}
-  p{margin:0}
-  a{color:inherit;text-decoration:none}
-  button{font:inherit;color:inherit}
-  img,svg{display:block}
-  ::selection{background:rgba(139,92,246,.22)}
-  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-  .skip{position:fixed;left:14px;top:-60px;z-index:200;background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:13px;transition:top .2s}
-  .skip:focus{top:14px}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  #progress{position:fixed;left:0;top:0;height:3px;width:0;z-index:120;background:var(--grad);box-shadow:0 0 12px rgba(139,92,246,.55)}
-  .wrap{width:min(var(--max),calc(100% - 40px));margin-inline:auto}
+    <title>DukaanMitra – WhatsApp AI Billing, Hisaab &amp; Inventory OS</title>
+    <meta
+      name="description"
+      content="India's AI Business Operating System for local shopkeepers. Manage WhatsApp billing, udhaar hisaab khata, inventory, and Google reviews on mobile or PC."
+    />
+    <link rel="canonical" href="https://dukaanmitra.in/" />
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
+    <link rel="alternate" type="text/markdown" title="LLMs Context" href="/llms.txt" />
+    <link rel="alternate" type="text/markdown" title="LLMs Full Context" href="/llms-full.txt" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  /* ---------- header ---------- */
-  .site-header{
-    position:fixed;inset:0 0 auto;z-index:100;height:66px;
-    display:flex;align-items:center;justify-content:space-between;gap:18px;
-    padding:0 clamp(16px,4vw,40px);
-    background:rgba(246,242,248,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-    border-bottom:1px solid transparent;transition:border-color .25s,background .25s,box-shadow .25s;
-  }
-  .site-header.scrolled{border-bottom-color:var(--line);background:rgba(246,242,248,.92);box-shadow:0 8px 30px rgba(23,18,37,.06)}
-  .brand{display:flex;align-items:center;gap:10px;font-family:Sora,sans-serif;font-weight:800;font-size:18px;letter-spacing:-.03em}
-  .brand-mark{display:grid;grid-template-columns:repeat(3,4px);align-items:end;gap:3px;height:22px}
-  .brand-mark i{display:block;width:4px;border-radius:3px;background:var(--grad)}
-  .brand-mark i:nth-child(1){height:22px}
-  .brand-mark i:nth-child(2){height:15px;background:var(--violet)}
-  .brand-mark i:nth-child(3){height:9px;background:var(--blue)}
-  .brand small{font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-left:2px;transform:translateY(1px)}
-  .nav{display:flex;align-items:center;gap:4px}
-  .nav a{padding:9px 12px;border-radius:10px;font-size:13.5px;font-weight:600;color:var(--ink-2);transition:background .18s,color .18s}
-  .nav a:hover{background:rgba(23,18,37,.05);color:var(--ink)}
-  .nav .nav-cta{margin-left:8px;background:var(--ink);color:#fff;padding:10px 16px;box-shadow:var(--shadow-sm)}
-  .nav .nav-cta:hover{background:#251d38;color:#fff}
-  .menu-btn{display:none;width:42px;height:42px;border:1px solid var(--line);background:rgba(255,255,255,.7);border-radius:12px;place-items:center;cursor:pointer}
-  .menu-btn span,.menu-btn span::before,.menu-btn span::after{display:block;width:17px;height:2px;border-radius:2px;background:var(--ink);position:relative;transition:transform .2s,opacity .2s}
-  .menu-btn span::before,.menu-btn span::after{content:"";position:absolute;left:0}
-  .menu-btn span::before{top:-5px}.menu-btn span::after{top:5px}
+    <!-- OpenGraph Social Card -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DukaanMitra" />
+    <meta property="og:url" content="https://dukaanmitra.in/" />
+    <meta property="og:title" content="DukaanMitra – WhatsApp AI Billing, Hisaab &amp; Inventory OS" />
+    <meta
+      property="og:description"
+      content="India's AI Business Operating System for local shopkeepers. Manage WhatsApp billing, udhaar hisaab khata, inventory, and Google reviews on mobile or PC."
+    />
+    <meta property="og:image" content="https://dukaanmitra.in/logo.svg" />
 
-  /* ---------- buttons / labels ---------- */
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;border-radius:14px;padding:13px 20px;font-size:14px;font-weight:700;cursor:pointer;transition:transform .18s var(--ease),box-shadow .18s,background .18s,border-color .18s;will-change:transform}
-  .btn:hover{transform:translateY(-2px)}
-  .btn:active{transform:translateY(0)}
-  .btn svg{width:17px;height:17px}
-  .btn-primary{background:var(--ink);color:#fff;box-shadow:0 12px 30px rgba(23,18,37,.2)}
-  .btn-primary:hover{box-shadow:0 16px 38px rgba(23,18,37,.26)}
-  .btn-grad{background:var(--grad);color:#fff;box-shadow:0 14px 34px rgba(139,92,246,.28)}
-  .btn-ghost{background:rgba(255,255,255,.7);border-color:var(--line-strong);color:var(--ink);box-shadow:var(--shadow-sm)}
-  .btn-wa{background:var(--green);color:#07321b;box-shadow:0 12px 30px rgba(37,211,102,.28)}
-  .btn-sm{padding:10px 15px;font-size:13px;border-radius:12px}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--violet)}
-  .eyebrow::before{content:"";width:22px;height:2px;border-radius:2px;background:var(--grad)}
-  .grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+    <!-- Twitter / X Social Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DukaanMitra – WhatsApp AI Billing, Hisaab &amp; Inventory OS" />
+    <meta
+      name="twitter:description"
+      content="Manage WhatsApp billing, udhaar hisaab khata, inventory, and Google reviews with Munim AI."
+    />
+    <meta name="twitter:image" content="https://dukaanmitra.in/logo.svg" />
 
-  /* ---------- hero ---------- */
-  .hero{padding:132px 0 58px;position:relative}
-  .hero-grid{display:grid;grid-template-columns:1.06fr .94fr;gap:clamp(34px,5vw,72px);align-items:center}
-  .hero h1{font-size:clamp(38px,5.5vw,70px);font-weight:800;max-width:13ch}
-  .hero h1 span{display:block}
-  .hero-lead{margin-top:22px;color:var(--muted);font-size:clamp(15px,1.4vw,17px);max-width:560px}
-  .hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
-  .hero-note{display:flex;flex-wrap:wrap;gap:7px 16px;margin-top:24px;font-size:12px;color:var(--muted);font-weight:600}
-  .hero-note span{display:inline-flex;align-items:center;gap:6px}
-  .hero-note span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--grad)}
-  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow-sm);border-radius:999px;padding:7px 12px 7px 8px;font-size:11.5px;font-weight:700;color:var(--ink-2);margin-bottom:22px}
-  .badge b{display:inline-flex;align-items:center;gap:5px;background:rgba(37,211,102,.14);color:var(--green-dark);border-radius:999px;padding:3px 8px;font-size:10.5px}
-  .badge b::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(37,211,102,.16)}
-
-  /* system console */
-  .console{
-    background:linear-gradient(160deg,#1a1428,#221a35 55%,#171225);color:#fff;border-radius:24px;
-    padding:18px;box-shadow:var(--shadow-lg);position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.08);
-  }
-  .console::before{content:"";position:absolute;inset:-40% -20% auto;height:70%;background:radial-gradient(ellipse at 50% 0,rgba(139,92,246,.38),transparent 65%);pointer-events:none}
-  .console-top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;padding:2px 4px 14px;border-bottom:1px solid rgba(255,255,255,.09)}
-  .console-top b{font-size:12px;letter-spacing:.04em;color:rgba(255,255,255,.68);font-weight:600}
-  .console-top b i{font-style:normal;color:#fff}
-  .live{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8ef0b4;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.24);border-radius:999px;padding:4px 8px}
-  .live::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(37,211,102,.15);animation:pulse 2s infinite}
-  .layer{position:relative;display:grid;grid-template-columns:84px 1fr;gap:10px;align-items:center;padding:11px 4px;border-bottom:1px dashed rgba(255,255,255,.08)}
-  .layer:last-of-type{border-bottom:0}
-  .layer span{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.42);font-weight:800}
-  .chips{display:flex;flex-wrap:wrap;gap:5px}
-  .chips i{font-style:normal;font-size:10.5px;font-weight:600;color:rgba(255,255,255,.86);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:7px;padding:4px 7px}
-  .chips i.hot{background:rgba(139,92,246,.24);border-color:rgba(139,92,246,.4)}
-  .console-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;padding:13px 4px 2px;border-top:1px solid rgba(255,255,255,.09);font-size:10.5px;color:rgba(255,255,255,.46);font-weight:600}
-  .console-foot b{color:#fff;font-weight:700}
-  .console-foot .dot{display:inline-flex;align-items:center;gap:5px}
-  .console-foot .dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 10px rgba(37,211,102,.9)}
-  .float-card{position:absolute;right:8px;bottom:34px;background:rgba(255,255,255,.96);color:var(--ink);border:1px solid rgba(255,255,255,.9);box-shadow:var(--shadow);border-radius:14px;padding:10px 12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:8px;transform:rotate(-2deg)}
-  .float-card b{font-family:Sora,sans-serif;font-size:18px;letter-spacing:-.04em;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .float-card small{display:block;color:var(--muted);font-weight:600;font-size:10px;letter-spacing:.02em}
-
-  /* ---------- marquee ---------- */
-  .strip{border-block:1px solid var(--line);background:rgba(255,255,255,.4);overflow:hidden;padding:13px 0}
-  .strip-track{display:flex;gap:30px;width:max-content;animation:marquee 36s linear infinite;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-  .strip-track span{display:inline-flex;align-items:center;gap:30px}
-  .strip-track span::after{content:"✦";color:var(--violet);font-size:10px}
-
-  /* ---------- sections ---------- */
-  .section{padding:clamp(62px,8vw,110px) 0}
-  .section-head{max-width:720px;margin-bottom:clamp(30px,4vw,46px)}
-  .section-head h2{font-size:clamp(30px,4.2vw,52px);font-weight:800;margin-top:14px}
-  .section-head p{margin-top:16px;color:var(--muted);font-size:15.5px;max-width:620px}
-  .section-head.center{margin-inline:auto;text-align:center}
-  .section-head.center p{margin-inline:auto}
-
-  /* products */
-  .products{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-  .product{
-    position:relative;background:var(--card);border:1px solid rgba(255,255,255,.92);border-radius:var(--r-lg);
-    padding:22px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:12px;
-    transition:transform .22s var(--ease),box-shadow .22s,border-color .22s;overflow:hidden;
-  }
-  .product:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:rgba(139,92,246,.24)}
-  .product::after{content:"";position:absolute;inset:auto -30% -50% auto;width:150px;height:150px;border-radius:50%;background:var(--grad-soft);filter:blur(10px);pointer-events:none}
-  .product-top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative}
-  .icon{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--grad-soft);border:1px solid rgba(139,92,246,.16);color:var(--violet)}
-  .icon svg{width:21px;height:21px}
-  .product-tag{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:rgba(23,18,37,.05);border-radius:999px;padding:4px 8px}
-  .product h3{font-size:20px;font-weight:800;position:relative}
-  .product p{font-size:13.5px;color:var(--muted);position:relative}
-  .product .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto;position:relative}
-  .product .meta span{font-size:10.5px;font-weight:700;color:var(--ink-2);background:rgba(255,255,255,.8);border:1px solid var(--line);border-radius:7px;padding:3px 7px}
-  .product .go{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:var(--violet);margin-top:4px;position:relative}
-  .product .go svg{width:14px;height:14px;transition:transform .18s}
-  .product:hover .go svg{transform:translateX(3px)}
-
-  /* services */
-  .services{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-  .service{background:rgba(255,255,255,.6);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px;display:grid;grid-template-columns:auto 1fr;gap:16px;transition:background .2s,border-color .2s,transform .2s}
-  .service:hover{background:rgba(255,255,255,.86);border-color:rgba(139,92,246,.22);transform:translateY(-3px)}
-  .service .icon{width:48px;height:48px}
-  .service h3{font-size:20px;font-weight:800}
-  .service p{font-size:13.5px;color:var(--muted);margin-top:7px}
-  .service ul{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:6px}
-  .service li{font-size:12.5px;color:var(--ink-2);display:flex;gap:7px;align-items:flex-start}
-  .service li::before{content:"✓";color:var(--green-dark);font-weight:800;font-size:11px;margin-top:1px}
-  .service .from{display:inline-block;margin-top:14px;font-size:11px;font-weight:800;color:var(--violet);letter-spacing:.04em;text-transform:uppercase}
-
-  /* platform */
-  .platform{background:linear-gradient(160deg,#171225,#211934 55%,#171225);color:#fff;border-radius:32px;padding:clamp(28px,5vw,54px);box-shadow:var(--shadow-lg);position:relative;overflow:hidden}
-  .platform::before{content:"";position:absolute;inset:-30% -10% auto;height:70%;background:radial-gradient(ellipse at 50% 0,rgba(139,92,246,.32),transparent 66%);pointer-events:none}
-  .platform .eyebrow{color:#c4b5fd}
-  .platform h2{font-size:clamp(28px,4vw,48px);margin-top:14px;max-width:16ch;position:relative}
-  .platform .lead{color:rgba(255,255,255,.62);margin-top:16px;font-size:15px;max-width:600px;position:relative}
-  .stack{display:grid;gap:10px;margin-top:34px;position:relative}
-  .stack-row{display:grid;grid-template-columns:150px 1fr;gap:14px;align-items:center;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:13px 16px}
-  .stack-row > span{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.45)}
-  .stack-row .chips i{font-size:11px;padding:5px 8px}
-  .principles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px;position:relative}
-  .principle{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:14px}
-  .principle b{display:block;font-size:12.5px;color:#fff}
-  .principle span{display:block;font-size:11px;color:rgba(255,255,255,.48);margin-top:5px;line-height:1.45}
-
-  /* cities */
-  .city-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .city{background:rgba(255,255,255,.66);border:1px solid var(--line);border-radius:14px;padding:15px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:700;transition:background .2s,transform .2s}
-  .city:hover{background:#fff;transform:translateY(-2px)}
-  .city small{font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-  .city.live{border-color:rgba(37,211,102,.35);background:rgba(37,211,102,.08)}
-  .city.live small{color:var(--green-dark)}
-  .city.big{grid-column:span 2}
-  .city-note{display:flex;align-items:center;gap:8px;margin-top:18px;font-size:12px;color:var(--muted);font-weight:600}
-  .city-note::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--grad)}
-
-  /* offers */
-  .offers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-  .offer{background:rgba(255,255,255,.74);border:1px solid rgba(255,255,255,.92);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow-sm);position:relative;transition:transform .2s,box-shadow .2s}
-  .offer:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-  .offer.featured{border-color:rgba(139,92,246,.32);box-shadow:0 18px 46px rgba(139,92,246,.14)}
-  .offer .tag{font-size:9.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--violet)}
-  .offer.featured .tag::after{content:" · popular";color:var(--pink)}
-  .offer h3{font-size:17px;font-weight:800}
-  .offer .price{font-family:Sora,sans-serif;font-size:24px;font-weight:800;letter-spacing:-.04em}
-  .offer .price small{font-family:Inter,sans-serif;font-size:10px;font-weight:700;color:var(--muted);letter-spacing:0}
-  .offer p{font-size:12px;color:var(--muted);min-height:36px}
-  .offer ul{list-style:none;padding:0;margin:0;display:grid;gap:5px}
-  .offer li{font-size:11.5px;color:var(--ink-2);display:flex;gap:6px}
-  .offer li::before{content:"✓";color:var(--green-dark);font-weight:800;font-size:10px}
-  .offer .btn{margin-top:auto;width:100%}
-  .pricing-note{margin-top:16px;font-size:11.5px;color:var(--muted);text-align:center}
-
-  /* launchpad */
-  .launch-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-  .launch-card{background:rgba(255,255,255,.72);border:1px solid rgba(255,255,255,.92);border-radius:22px;padding:22px;box-shadow:var(--shadow-sm)}
-  .launch-card h3{font-size:19px;font-weight:800}
-  .launch-card > p{font-size:13px;color:var(--muted);margin-top:7px}
-  .link-list{display:grid;gap:7px;margin-top:16px}
-  .link-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:12.5px;font-weight:700;transition:background .18s,border-color .18s}
-  .link-row:hover{background:#fff;border-color:rgba(139,92,246,.26)}
-  .link-row small{display:block;font-size:10.5px;font-weight:600;color:var(--muted);margin-top:1px}
-  .link-row .port{font-family:Sora,sans-serif;font-size:10px;font-weight:700;color:var(--violet);background:rgba(139,92,246,.08);border-radius:6px;padding:3px 6px;white-space:nowrap}
-  .code{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#171225;color:#e9e2f5;border-radius:12px;padding:12px 14px;margin-top:16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;overflow:auto}
-  .code b{color:#8ef0b4;font-weight:600}
-  .copy{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);color:#fff;border-radius:7px;padding:5px 8px;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap}
-  .copy:hover{background:rgba(255,255,255,.18)}
-
-  /* faq */
-  .faq{display:grid;gap:9px;max-width:840px;margin-inline:auto}
-  .faq details{background:rgba(255,255,255,.66);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:background .2s,border-color .2s}
-  .faq details[open]{background:rgba(255,255,255,.9);border-color:rgba(139,92,246,.22)}
-  .faq summary{list-style:none;cursor:pointer;padding:16px 18px;font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:14px}
-  .faq summary::-webkit-details-marker{display:none}
-  .faq summary::after{content:"+";font-family:Sora,sans-serif;font-size:20px;font-weight:500;color:var(--violet);transition:transform .2s}
-  .faq details[open] summary::after{transform:rotate(45deg)}
-  .faq p{padding:0 18px 17px;font-size:12.5px;color:var(--muted);line-height:1.65;max-width:700px}
-
-  /* contact */
-  .contact-card{background:var(--white);border:1px solid rgba(255,255,255,.92);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);padding:clamp(24px,4vw,40px);display:grid;grid-template-columns:.95fr 1.05fr;gap:clamp(26px,5vw,50px);align-items:center}
-  .contact-copy h2{font-size:clamp(28px,3.6vw,42px);font-weight:800}
-  .contact-copy p{color:var(--muted);margin-top:14px;font-size:14.5px;max-width:430px}
-  .contact-copy .perks{list-style:none;padding:0;margin:20px 0 0;display:grid;gap:8px;font-size:13px;color:var(--ink-2)}
-  .contact-copy .perks li{display:flex;gap:8px}
-  .contact-copy .perks li::before{content:"✓";color:var(--green-dark);font-weight:800}
-  form.brief{display:grid;gap:11px}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .field{display:grid;gap:5px;text-align:left}
-  .field label{font-size:11px;font-weight:800;letter-spacing:.03em;color:var(--ink-2)}
-  .field input,.field select{width:100%;background:rgba(246,242,248,.7);border:1px solid var(--line-strong);border-radius:10px;padding:11px 12px;font:inherit;font-size:13px;color:var(--ink);outline:none;transition:border-color .18s,box-shadow .18s,background .18s}
-  .field input:focus,.field select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,92,246,.12);background:#fff}
-  .form-note{font-size:10.5px;color:var(--muted);line-height:1.5}
-  .form-success{display:none;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.28);color:#0b6b38;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:600}
-  .form-success.show{display:block}
-  .form-success a{text-decoration:underline;font-weight:800}
-
-  /* footer */
-  footer{border-top:1px solid var(--line);padding:48px 0 30px;background:rgba(255,255,255,.3)}
-  .footer-grid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:28px}
-  .footer-brand p{font-size:12.5px;color:var(--muted);max-width:280px;margin-top:12px}
-  .footer-col h4{font-family:Inter,sans-serif;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 12px}
-  .footer-col a{display:block;font-size:12.5px;color:var(--ink-2);padding:4px 0;font-weight:600}
-  .footer-col a:hover{color:var(--violet)}
-  .footer-bottom{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
-  .footer-bottom b{color:var(--ink-2)}
-
-  /* reveal */
-  .reveal{opacity:0;transform:translateY(18px);transition:opacity .65s var(--ease),transform .65s var(--ease)}
-  .reveal.in{opacity:1;transform:none}
-
-  @keyframes marquee{to{transform:translateX(-50%)}}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-
-  /* ---------- responsive ---------- */
-  @media (max-width:1040px){
-    .hero-grid{grid-template-columns:1fr;gap:40px}
-    .hero h1{max-width:16ch}
-    .console{max-width:640px}
-    .products{grid-template-columns:repeat(2,1fr)}
-    .offers{grid-template-columns:repeat(2,1fr)}
-    .principles{grid-template-columns:repeat(2,1fr)}
-    .footer-grid{grid-template-columns:1.2fr 1fr 1fr}
-    .footer-col:last-child{grid-column:2/4}
-  }
-  @media (max-width:760px){
-    .nav{position:fixed;inset:66px 12px auto;flex-direction:column;align-items:stretch;gap:4px;background:rgba(255,255,255,.97);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .22s var(--ease)}
-    .nav.open{opacity:1;visibility:visible;transform:none}
-    .nav a{padding:11px 14px;font-size:14px}
-    .nav .nav-cta{margin-left:0;text-align:center}
-    .menu-btn{display:grid}
-    .hero{padding-top:108px}
-    .services{grid-template-columns:1fr}
-    .city-grid{grid-template-columns:repeat(2,1fr)}
-    .city.big{grid-column:span 2}
-    .launch-grid{grid-template-columns:1fr}
-    .contact-card{grid-template-columns:1fr}
-    .stack-row{grid-template-columns:1fr;gap:7px}
-    .footer-grid{grid-template-columns:1fr 1fr}
-    .footer-brand{grid-column:1/-1}
-    .footer-col:last-child{grid-column:auto}
-    .float-card{right:8px;bottom:14px;transform:rotate(-1deg)}
-  }
-  @media (max-width:520px){
-    .wrap{width:calc(100% - 28px)}
-    .products{grid-template-columns:1fr}
-    .offers{grid-template-columns:1fr}
-    .principles{grid-template-columns:1fr}
-    .form-row{grid-template-columns:1fr}
-    .hero-actions .btn{width:100%}
-    .console{max-width:100%;padding:14px}
-    .layer{grid-template-columns:72px 1fr}
-    .float-card{display:none}
-    .footer-grid{grid-template-columns:1fr}
-  }
-  @media (prefers-reduced-motion:reduce){
-    html{scroll-behavior:auto}
-    *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
-    .reveal{opacity:1;transform:none}
-  }
-</style>
-</head>
-<body>
-<a class="skip" href="#main">Skip to content</a>
-<div id="progress" aria-hidden="true"></div>
-
-<header class="site-header" id="siteHeader">
-  <a class="brand" href="#top" aria-label="Mitra System home">
-    <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-    Mitra System <small>OS</small>
-  </a>
-  <button class="menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="nav"><span></span></button>
-  <nav class="nav" id="nav" aria-label="Main">
-    <a href="#products">Products</a>
-    <a href="#services">Services</a>
-    <a href="#platform">Platform</a>
-    <a href="#launchpad">Launchpad</a>
-    <a href="apps/business-runner/?biz=kirana&city=kanpur">Demos</a>
-    <a href="#contact">Contact</a>
-    <a class="nav-cta" href="#contact">Project shuru karein</a>
-  </nav>
-</header>
-
-<main id="main">
-  <!-- HERO -->
-  <section class="hero" id="top">
-    <div class="wrap hero-grid">
-      <div>
-        <div class="badge reveal">Kanpur se shuru · India ke liye bana <b>Pilot city</b></div>
-        <h1 class="reveal">Website se dukaan tak.<br />WhatsApp se machine tak.<br /><span class="grad-text">Sab AI se juda.</span></h1>
-        <p class="hero-lead reveal">Mitra System ek AI product studio + platform hai. Hum DukaanMitra, StoreMitra aur AgentMitra banate hain — taaki har business online ho, automate ho, aur bina badi team ke scale kare.</p>
-        <div class="hero-actions reveal">
-          <a class="btn btn-primary" href="#products">Products dekhein
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-          <a class="btn btn-ghost" href="#platform">System map</a>
-          <a class="btn btn-ghost" href="apps/business-runner/?biz=kirana&city=kanpur">Business runner demo</a>
-        </div>
-        <div class="hero-note reveal">
-          <span>Web development</span><span>Agent bots</span><span>AI automation</span><span>Physical AI</span>
-        </div>
-      </div>
-
-      <div class="reveal">
-        <div class="console" aria-label="Mitra System architecture preview">
-          <div class="console-top">
-            <b>mitra.system <i>/ live</i></b>
-            <span class="live">online</span>
-          </div>
-          <div class="layer">
-            <span>01 Channels</span>
-            <div class="chips"><i class="hot">WhatsApp</i><i>Web</i><i>QR</i><i>Voice</i><i>IoT</i></div>
-          </div>
-          <div class="layer">
-            <span>02 Agents</span>
-            <div class="chips"><i>Sales</i><i class="hot">Support</i><i>Inventory</i><i>Finance</i><i>Ops</i></div>
-          </div>
-          <div class="layer">
-            <span>03 Core OS</span>
-            <div class="chips"><i>Orders</i><i>Udhaar</i><i>Stock</i><i>GST</i><i>CRM</i></div>
-          </div>
-          <div class="layer">
-            <span>04 Data</span>
-            <div class="chips"><i>Postgres</i><i>Vector</i><i>Audit</i><i>RLS</i></div>
-          </div>
-          <div class="console-foot">
-            <span><b>5</b> services · <b>20</b> agents · <b>1</b> OS</span>
-            <span class="dot">Kanpur node</span>
-          </div>
-        </div>
-        <div class="float-card" aria-hidden="true">
-          <b>9.9k</b>
-          <div><small>messages automated</small><small>this month · demo</small></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- STRIP -->
-  <div class="strip" aria-hidden="true">
-    <div class="strip-track">
-      <span>Kirana</span><span>Clinics</span><span>Coaching</span><span>Salons</span><span>D2C</span><span>Distributors</span><span>WhatsApp-first</span><span>UPI</span><span>GST</span><span>India-wide</span><span>Agent bots</span><span>Physical AI</span>
-      <span>Kirana</span><span>Clinics</span><span>Coaching</span><span>Salons</span><span>D2C</span><span>Distributors</span><span>WhatsApp-first</span><span>UPI</span><span>GST</span><span>India-wide</span><span>Agent bots</span><span>Physical AI</span>
-    </div>
-  </div>
-
-  <!-- PRODUCTS -->
-  <section class="section" id="products">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Product suite</span>
-        <h2>Ek system.<br />Alag-alag darwaze.</h2>
-        <p>Aapki zaroorat ke hisaab se ek product chuno — ya poora system lagwao. Sab kuch ek hi data layer, ek hi agent mesh aur ek hi login se juda hai.</p>
-      </div>
-
-      <div class="products">
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5 4.6 4h14.8L21 9.5"/><path d="M3 9.5h18"/><path d="M5 9.5V20h14V9.5"/><path d="M9 20v-5h6v5"/></svg></div>
-            <span class="product-tag">Commerce OS</span>
-          </div>
-          <h3>DukaanMitra</h3>
-          <p>WhatsApp orders, udhaar khata, inventory, GST aur daily galla — dukaan ke liye ek AI operating system.</p>
-          <div class="meta"><span>Kirana</span><span>Retail</span><span>Clinic</span></div>
-          <a class="go" href="apps/dukaanmitra-site/index.html">Product site dekhein
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16l-1 13H5L4 7Z"/><path d="M8 7a4 4 0 0 1 8 0"/><path d="M9 12h6"/></svg></div>
-            <span class="product-tag">Storefront</span>
-          </div>
-          <h3>StoreMitra</h3>
-          <p>Catalogue, cart, UPI checkout aur local SEO — aapki dukaan ka apna online store, WhatsApp ke saath.</p>
-          <div class="meta"><span>D2C</span><span>Local retail</span><span>Food</span></div>
-          <a class="go" href="apps/storemitra-site/index.html">Live store dekhein
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18"/><path d="M8 14h3"/><path d="M8 17h6"/></svg></div>
-            <span class="product-tag">Platform</span>
-          </div>
-          <h3>MitraOS</h3>
-          <p>Merchant console aur headless engine — POS, ledger, CRM, analytics aur multi-store control ek jagah.</p>
-          <div class="meta"><span>POS</span><span>Ledger</span><span>Multi-store</span></div>
-          <a class="go" href="http://localhost:3000" data-local>Console kholo
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V5"/><path d="M8 13h.01M16 13h.01"/><path d="M9 16h6"/></svg></div>
-            <span class="product-tag">Agents</span>
-          </div>
-          <h3>AgentMitra</h3>
-          <p>Sales, support, follow-up aur back-office agents jo WhatsApp, web aur voice par 24x7 kaam karein.</p>
-          <div class="meta"><span>Bots</span><span>RAG</span><span>Automation</span></div>
-          <a class="go" href="http://localhost:3000/ai-ecosystem" data-local>Agent demo
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3.2-6.9"/><path d="M21 3v6h-6"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></div>
-            <span class="product-tag">Gateway</span>
-          </div>
-          <h3>OpenWA</h3>
-          <p>QR se WhatsApp connect, multi-session, webhooks aur MCP-ready gateway — bina Meta approval ke.</p>
-          <div class="meta"><span>WhatsApp</span><span>Webhooks</span><span>Open source</span></div>
-          <a class="go" href="http://localhost:2785" data-local>Gateway kholo
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-
-        <article class="product reveal">
-          <div class="product-top">
-            <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></div>
-            <span class="product-tag">Physical AI</span>
-          </div>
-          <h3>Dukaan + Machine</h3>
-          <p>Sensors, cameras, QR, printers aur machine telemetry ko AI se jodo — dukaan ke bahar bhi system chalta rahe.</p>
-          <div class="meta"><span>IoT</span><span>Vision</span><span>Telemetry</span></div>
-          <a class="go" href="#contact">Pilot discuss karein
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>
-          </a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- SERVICES -->
-  <section class="section" id="services" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Services</span>
-        <h2>Sirf software nahi.<br />Poora system.</h2>
-        <p>Strategy, build, deploy aur run — hum poora loop handle karte hain. Aapko sirf apna business dena hai.</p>
-      </div>
-
-      <div class="services">
-        <article class="service reveal">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/><path d="M8 18v3M16 18v3"/></svg></div>
-          <div>
-            <h3>Web development</h3>
-            <p>Landing pages, storefronts, dashboards aur PWAs — fast, SEO-ready aur mobile-first.</p>
-            <ul><li>Conversion-focused landing pages</li><li>Next.js / React storefronts</li><li>Admin dashboards + auth</li><li>Google Business + local SEO</li></ul>
-            <span class="from">From ₹14,999</span>
-          </div>
-        </article>
-
-        <article class="service reveal">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 8V5"/><path d="M8 13h.01M16 13h.01"/><path d="M9 16h6"/></svg></div>
-          <div>
-            <h3>Agent bots</h3>
-            <p>WhatsApp, voice aur web agents jo lead capture, support aur order taking karein.</p>
-            <ul><li>WhatsApp sales + support agent</li><li>Voice note / IVR flows</li><li>CRM sync + human handoff</li><li>Hindi, Hinglish, English</li></ul>
-            <span class="from">From ₹39,999</span>
-          </div>
-        </article>
-
-        <article class="service reveal">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4"/><path d="m5.6 5.6 2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></div>
-          <div>
-            <h3>AI automation</h3>
-            <p>OCR, RAG, lead routing, reports aur back-office workflows — human approval ke saath.</p>
-            <ul><li>Bill / invoice / slip OCR</li><li>Knowledge-base RAG assistant</li><li>Follow-up + collection automation</li><li>Daily reports on WhatsApp</li></ul>
-            <span class="from">From ₹29,999</span>
-          </div>
-        </article>
-
-        <article class="service reveal">
-          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="2"/><path d="M9 3v4M15 3v4M9 17v4M15 17v4M3 9h4M3 15h4M17 9h4M17 15h4"/></svg></div>
-          <div>
-            <h3>Physical AI</h3>
-            <p>Sensors, cameras, QR aur machine data ko AI se jodkar offline operations ko online intelligence do.</p>
-            <ul><li>IoT telemetry + alerts</li><li>Camera / vision checks</li><li>QR, printers, scanners</li><li>Solar, truck, cold-chain pilots</li></ul>
-            <span class="from">Pilot from ₹99,999</span>
-          </div>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- PLATFORM -->
-  <section class="section" id="platform" style="padding-top:0">
-    <div class="wrap">
-      <div class="platform reveal">
-        <span class="eyebrow">Under the hood</span>
-        <h2>Ek brain. Har channel. Human control.</h2>
-        <p class="lead">DukaanMitra aur StoreMitra same core par chalte hain: event-driven ledger, agent mesh, RLS data aur audit trail. AI suggest karta hai — decision aapka rehta hai.</p>
-
-        <div class="stack" aria-label="System architecture">
-          <div class="stack-row"><span>Channels</span><div class="chips"><i class="hot">WhatsApp</i><i>Website</i><i>QR</i><i>Voice</i><i>IoT</i></div></div>
-          <div class="stack-row"><span>Agent mesh</span><div class="chips"><i>Inventory</i><i>Procurement</i><i>Pricing</i><i>Marketing</i><i>Credit</i><i>Support</i></div></div>
-          <div class="stack-row"><span>Core OS</span><div class="chips"><i>Orders</i><i>Udhaar</i><i>Stock</i><i>GST</i><i>CRM</i><i>Ledger</i></div></div>
-          <div class="stack-row"><span>Data & trust</span><div class="chips"><i>Postgres</i><i>pgvector</i><i>RLS</i><i>Audit</i><i>Approval gate</i></div></div>
-        </div>
-
-        <div class="principles">
-          <div class="principle"><b>Human-in-the-loop</b><span>Paisa, stock aur price AI apne aap nahi badalta. Approval gate har sensitive action par.</span></div>
-          <div class="principle"><b>WhatsApp-first</b><span>Customer ko naya app download nahi karna. Wahi WhatsApp, naya intelligence.</span></div>
-          <div class="principle"><b>India-first</b><span>Hinglish, UPI, GST, low bandwidth aur Tier-2 dukaan ki reality ke liye bana.</span></div>
-          <div class="principle"><b>Open core</b><span>OpenWA, MCP connectors aur aapka data — lock-in nahi, control aapke paas.</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CITIES -->
-  <section class="section" id="cities" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Launch map</span>
-        <h2>Kanpur se shuru.<br />India ke liye bana.</h2>
-        <p>Pehla pilot Kanpur me. Delivery remote hai — Lucknow se Bengaluru tak, aur aage London, Dubai aur New York tak.</p>
-      </div>
-      <div class="city-grid reveal">
-        <div class="city live"><span>Kanpur</span><small>Pilot city</small></div>
-        <div class="city"><span>Lucknow</span><small>Next</small></div>
-        <div class="city"><span>Delhi NCR</span><small>Q1</small></div>
-        <div class="city"><span>Mumbai</span><small>Q1</small></div>
-        <div class="city"><span>Bengaluru</span><small>Q2</small></div>
-        <div class="city"><span>Hyderabad</span><small>Q2</small></div>
-        <div class="city big"><span>London · Dubai · New York</span><small>Global</small></div>
-        <div class="city"><span>Remote · India</span><small>Anytime</small></div>
-      </div>
-      <p class="city-note">Kanpur me local setup. Baaki India me remote onboarding + WhatsApp support.</p>
-    </div>
-  </section>
-
-  <!-- OFFERS -->
-  <section class="section" id="offers" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Productized offers</span>
-        <h2>Shuru karne ke liye<br />saaf packages.</h2>
-        <p>Har package fixed scope ke saath. Pehle 20-minute discovery, phir final quote. Koi hidden retainer nahi.</p>
-      </div>
-
-      <div class="offers">
-        <article class="offer reveal">
-          <span class="tag">Launch</span>
-          <h3>Web + WhatsApp</h3>
-          <div class="price">₹14,999<small>+</small></div>
-          <p>Business ko online laane ke liye minimum viable system.</p>
-          <ul><li>5-page mobile-first site</li><li>WhatsApp CTA + lead form</li><li>Google Business setup</li><li>2-week delivery</li></ul>
-          <a class="btn btn-ghost btn-sm" href="#contact">Enquire</a>
-        </article>
-
-        <article class="offer featured reveal">
-          <span class="tag">Commerce</span>
-          <h3>StoreMitra</h3>
-          <div class="price">₹29,999<small> setup</small></div>
-          <p>Apni dukaan ka online store, WhatsApp orders ke saath.</p>
-          <ul><li>500 SKU catalogue</li><li>Cart + UPI checkout</li><li>Delivery + order alerts</li><li>₹1,999/mo managed</li></ul>
-          <a class="btn btn-grad btn-sm" href="#contact">Book demo</a>
-        </article>
-
-        <article class="offer reveal">
-          <span class="tag">Automation</span>
-          <h3>AgentMitra</h3>
-          <div class="price">₹39,999<small> setup</small></div>
-          <p>Ek WhatsApp agent jo lead, support aur follow-up kare.</p>
-          <ul><li>1 custom agent</li><li>5 automations</li><li>CRM + human handoff</li><li>₹4,999/mo managed</li></ul>
-          <a class="btn btn-ghost btn-sm" href="#contact">Scope karein</a>
-        </article>
-
-        <article class="offer reveal">
-          <span class="tag">Physical AI</span>
-          <h3>Pilot</h3>
-          <div class="price">₹99,999<small>+</small></div>
-          <p>Ek site, ek use-case, 4-week measurable pilot.</p>
-          <ul><li>Sensor / camera / QR</li><li>Live dashboard + alerts</li><li>AI decision support</li><li>Scale plan included</li></ul>
-          <a class="btn btn-ghost btn-sm" href="#contact">Pilot discuss</a>
-        </article>
-      </div>
-      <p class="pricing-note">Indicative launch pricing. Final scope ke baad quote. Taxes extra.</p>
-    </div>
-  </section>
-
-  <!-- LAUNCHPAD -->
-  <section class="section" id="launchpad" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head reveal">
-        <span class="eyebrow">Launchpad</span>
-        <h2>Abhi chala kar dekho.</h2>
-        <p>Teen static demos bina setup ke chalte hain. Poora stack chalane ke liye ek command kaafi hai.</p>
-      </div>
-
-      <div class="launch-grid">
-        <div class="launch-card reveal">
-          <h3>Static demos</h3>
-          <p>Kisi bhi browser me turant khulenge. Koi install nahi.</p>
-          <div class="link-list">
-            <a class="link-row" href="apps/dukaanmitra-site/index.html"><span>DukaanMitra product site<small>Chat, cities, pricing, waitlist</small></span><span class="port">HTML</span></a>
-            <a class="link-row" href="apps/storemitra-site/index.html"><span>StoreMitra storefront<small>Catalogue, cart, WhatsApp checkout</small></span><span class="port">HTML</span></a>
-            <a class="link-row" href="apps/business-runner/?biz=kirana&city=kanpur"><span>Business Runner<small>8 business types · 9 cities · owner dashboard</small></span><span class="port">NEW</span></a>
-            <a class="link-row" href="demos/index.html"><span>All 72 demos<small>Every business × city combination</small></span><span class="port">72</span></a>
-            <a class="link-row" href="docs/INDEX.md"><span>Documentation index<small>Brand, system, services, playbooks</small></span><span class="port">MD</span></a>
-          </div>
-        </div>
-
-        <div class="launch-card reveal">
-          <h3>Live stack</h3>
-          <p>Node.js + Python chahiye. Docker optional hai.</p>
-          <div class="code" id="startCode"><span><b>$</b> .\scripts\start-all.ps1</span><button class="copy" id="copyStart" type="button">Copy</button></div>
-          <div class="link-list">
-            <a class="link-row" href="http://localhost:3000" data-local><span>MitraOS console<small>Merchant dashboard + AI ecosystem</small></span><span class="port">:5173</span></a>
-            <a class="link-row" href="http://localhost:3001" data-local><span>DukaanMitra storefront<small>Next.js customer commerce</small></span><span class="port">:3001</span></a>
-            <a class="link-row" href="http://localhost:8000" data-local><span>AI services<small>FastAPI brain + sandbox agents</small></span><span class="port">:8000</span></a>
-            <a class="link-row" href="http://localhost:2785" data-local><span>OpenWA gateway<small>WhatsApp QR + webhooks</small></span><span class="port">:2785</span></a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FAQ -->
-  <section class="section" id="faq" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-head center reveal">
-        <span class="eyebrow">FAQ</span>
-        <h2>Seedhe jawab.</h2>
-      </div>
-      <div class="faq reveal">
-        <details>
-          <summary>Kya ye sirf Kanpur ke liye hai?</summary>
-          <p>Nahi. Kanpur pehla pilot hai kyunki wahan se humne shuru kiya. Delivery poore India me remote hai — Lucknow, Delhi NCR, Mumbai, Bengaluru, Hyderabad. Global clients ke liye London, Dubai aur New York bhi open hai.</p>
-        </details>
-        <details>
-          <summary>Mujhe coding ya design nahi aati. Chalega?</summary>
-          <p>Haan. Hum discovery, design, build, deploy aur training sab handle karte hain. Aapko sirf apna catalogue, prices, timing aur WhatsApp number dena hai.</p>
-        </details>
-        <details>
-          <summary>Customer ko naya app download karna padega?</summary>
-          <p>Nahi. Customer wahi WhatsApp use karta hai. StoreMitra me web store bhi hai, par order WhatsApp par bhi aa sakta hai. Aapko bas apna business number connect karwana hai.</p>
-        </details>
-        <details>
-          <summary>AI apne aap payment ya stock change karta hai?</summary>
-          <p>Nahi. Sensitive actions — payment, refund, price change, stock write-off — human approval gate ke peeche hain. AI recommend karta hai, audit trail banti hai, decision aapka rehta hai.</p>
-        </details>
-        <details>
-          <summary>Data kahan store hota hai?</summary>
-          <p>Aapke Supabase/Postgres project me, Row-Level Security ke saath. AI ke liye Gemini/OpenAI jaise models use hote hain, aur aap kabhi bhi model badal sakte ho. Chat transcripts optional hain.</p>
-        </details>
-        <details>
-          <summary>Physical AI me exactly kya karte ho?</summary>
-          <p>Sensor, camera, QR, printer ya machine se data lena, usko AI se samajhna, aur dashboard/alerts/actions me badalna. Example: cold-chain temperature alerts, solar telemetry, truck location, dukaan camera se footfall. Pilot 4 weeks me ek measurable use-case deliver karta hai.</p>
-        </details>
-        <details>
-          <summary>Kitna time lagta hai?</summary>
-          <p>Web launch: 2 weeks. StoreMitra: 3–4 weeks. AgentMitra: 2–4 weeks. Physical AI pilot: 4–6 weeks. Exact timeline discovery ke baad.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT -->
-  <section class="section" id="contact" style="padding-top:0">
-    <div class="wrap">
-      <div class="contact-card reveal">
-        <div class="contact-copy">
-          <span class="eyebrow">Start a project</span>
-          <h2>Apni dukaan, clinic, coaching ya factory ko AI-ready karo.</h2>
-          <p>20-minute discovery call. Hum aapka workflow samjhenge, ek clear scope denge, aur bina jargon ke batayenge ki kya possible hai.</p>
-          <ul class="perks">
-            <li>Free 20-minute discovery</li>
-            <li>Fixed-scope quote</li>
-            <li>Kanpur local setup on request</li>
-            <li>Hindi / Hinglish / English</li>
-          </ul>
-        </div>
-
-        <form class="brief" id="briefForm" autocomplete="on">
-          <div class="form-row">
-            <div class="field">
-              <label for="mName">Aapka naam</label>
-              <input id="mName" name="name" required placeholder="Amit Sharma" />
-            </div>
-            <div class="field">
-              <label for="mPhone">WhatsApp number</label>
-              <input id="mPhone" name="whatsapp" type="tel" inputmode="tel" required placeholder="10-digit number" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="mBusiness">Business</label>
-              <input id="mBusiness" name="business" required placeholder="Sharma Kirana Store" />
-            </div>
-            <div class="field">
-              <label for="mCity">City</label>
-              <input id="mCity" name="city" required placeholder="Kanpur" />
-            </div>
-          </div>
-          <div class="field">
-            <label for="mNeed">Kya chahiye?</label>
-            <select id="mNeed" name="need">
-              <option>Website / landing page</option>
-              <option>StoreMitra online store</option>
-              <option>DukaanMitra commerce OS</option>
-              <option>WhatsApp agent / automation</option>
-              <option>Physical AI pilot</option>
-              <option>Poora system / kuch aur</option>
-            </select>
-          </div>
-          <button class="btn btn-wa" type="submit" id="briefBtn">WhatsApp par brief bhejein
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.42 15.15L2 22l4.98-1.57A9.9 9.9 0 1 0 12.04 2Zm0 1.7a8.2 8.2 0 0 1 0 16.4 8.1 8.1 0 0 1-4.14-1.13l-.3-.18-2.95.93.94-2.87-.2-.31A8.2 8.2 0 0 1 12.04 3.7Zm-3.4 4.2c-.18 0-.46.07-.7.33-.24.26-.92.9-.92 2.2 0 1.3.94 2.55 1.07 2.72.13.18 1.85 2.95 4.5 4.02 2.2.87 2.65.7 3.13.65.48-.04 1.55-.63 1.77-1.25.22-.62.22-1.15.15-1.26-.06-.11-.24-.18-.5-.31-.26-.13-1.55-.76-1.79-.85-.24-.09-.41-.13-.59.13-.17.26-.68.85-.83 1.02-.15.18-.31.2-.57.07-.26-.13-1.1-.4-2.1-1.29-.78-.69-1.3-1.54-1.45-1.8-.15-.26-.02-.4.11-.53.11-.11.26-.31.39-.46.13-.15.17-.26.26-.44.09-.17.04-.33-.02-.46-.07-.13-.59-1.42-.8-1.94-.22-.5-.44-.43-.6-.44h-.5Z"/></svg>
-          </button>
-          <p class="form-note">Demo: form aapke browser me save hota hai, phir WhatsApp khulta hai. Koi data server par nahi jata jab tak aap connect nahi karte.</p>
-          <div class="form-success" id="briefSuccess" role="status"></div>
-        </form>
-      </div>
-    </div>
-  </section>
-</main>
-
-<footer>
-  <div class="wrap">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span> Mitra System</a>
-        <p>Business ko AI se jodte hain — website, WhatsApp, dukaan aur machine tak. Kanpur se shuru, India ke liye bana.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Products</h4>
-        <a href="apps/dukaanmitra-site/index.html">DukaanMitra</a>
-        <a href="apps/storemitra-site/index.html">StoreMitra</a>
-        <a href="apps/business-runner/?biz=kirana&city=kanpur">Business Runner</a>
-        <a href="http://localhost:3000" data-local>MitraOS</a>
-        <a href="#platform">AgentMitra</a>
-      </div>
-      <div class="footer-col">
-        <h4>Services</h4>
-        <a href="#services">Web development</a>
-        <a href="#services">Agent bots</a>
-        <a href="#services">AI automation</a>
-        <a href="#services">Physical AI</a>
-      </div>
-      <div class="footer-col">
-        <h4>System</h4>
-        <a href="README.md">README</a>
-        <a href="SYSTEM.md">Architecture</a>
-        <a href="docs/INDEX.md">Documentation</a>
-        <a href="business/OFFERS.md">Offers</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© <span id="year">2026</span> <b>Mitra System</b>. Made in Kanpur. Built for India.</span>
-      <span>DukaanMitra · StoreMitra · MitraOS · AgentMitra</span>
-    </div>
-  </div>
-</footer>
-
-<script>
-(function () {
-  "use strict";
-
-  var header = document.getElementById("siteHeader");
-  var progress = document.getElementById("progress");
-  var menuBtn = document.getElementById("menuBtn");
-  var nav = document.getElementById("nav");
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function onScroll() {
-    var doc = document.documentElement;
-    var max = doc.scrollHeight - doc.clientHeight;
-    progress.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + "%";
-    header.classList.toggle("scrolled", doc.scrollTop > 8);
-  }
-  window.addEventListener("scroll", onScroll, { passive: true });
-  onScroll();
-
-  menuBtn.addEventListener("click", function () {
-    var open = nav.classList.toggle("open");
-    menuBtn.setAttribute("aria-expanded", String(open));
-  });
-  nav.addEventListener("click", function (e) {
-    if (e.target.closest("a")) {
-      nav.classList.remove("open");
-      menuBtn.setAttribute("aria-expanded", "false");
-    }
-  });
-
-  var reveals = Array.prototype.slice.call(document.querySelectorAll(".reveal"));
-  if ("IntersectionObserver" in window && !reduceMotion) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("in");
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: "0px 0px -40px" });
-    reveals.forEach(function (el) { io.observe(el); });
-  } else {
-    reveals.forEach(function (el) { el.classList.add("in"); });
-  }
-
-  document.getElementById("year").textContent = new Date().getFullYear();
-
-  var copyBtn = document.getElementById("copyStart");
-  if (copyBtn) {
-    copyBtn.addEventListener("click", function () {
-      var text = ".\\scripts\\start-all.ps1";
-      function done() {
-        copyBtn.textContent = "Copied";
-        setTimeout(function () { copyBtn.textContent = "Copy"; }, 1600);
+    <!-- Structured Data / Schema.org JSON-LD Graph -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://dukaanmitra.in/#organization",
+            "name": "DukaanMitra",
+            "alternateName": ["DukaanMitra OS", "Munim AI", "Hisaab Mitra", "Udhaar Mitra", "Inventory Mitra"],
+            "url": "https://dukaanmitra.in/",
+            "logo": "https://dukaanmitra.in/logo.svg",
+            "description": "India's WhatsApp-native AI Business Operating System for local shopkeepers and inventory-driven retail businesses.",
+            "founder": {
+              "@type": "Person",
+              "name": "Amit Sharma",
+              "jobTitle": "Founder",
+              "homeLocation": {
+                "@type": "Place",
+                "name": "Kanpur, Uttar Pradesh, India"
+              }
+            },
+            "sameAs": [
+              "https://www.linkedin.com/company/dukaanmitra/",
+              "https://youtube.com/@officialdukaanmitra"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://dukaanmitra.in/#website",
+            "url": "https://dukaanmitra.in/",
+            "name": "DukaanMitra",
+            "publisher": { "@id": "https://dukaanmitra.in/#organization" },
+            "inLanguage": ["en-IN", "hi-IN"],
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://dukaanmitra.in/sitemap?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://dukaanmitra.in/#software",
+            "name": "DukaanMitra OS (Munim AI)",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web, Android, iOS, Windows PC via WhatsApp & Browser",
+            "url": "https://dukaanmitra.in/",
+            "description": "WhatsApp-native AI billing, digital bahi khata, udhaar UPI reminders, real-time inventory tracking, and automated Google reviews for Indian retail stores.",
+            "offers": {
+              "@type": "AggregateOffer",
+              "lowPrice": "0",
+              "highPrice": "999",
+              "priceCurrency": "INR",
+              "offerCount": "3"
+            },
+            "publisher": { "@id": "https://dukaanmitra.in/#organization" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://dukaanmitra.in/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "What is DukaanMitra (Hisaab Mitra / Inventory Mitra)?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "DukaanMitra OS is a WhatsApp-native AI business operating system for Indian shopkeepers that automates daily billing, udhaar khata reminders with UPI links, real-time stock inventory, and Google reviews using Munim AI."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Who is the founder of DukaanMitra?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "DukaanMitra was founded by Amit Sharma in Kanpur, India, to help local kirana, pharmacy, hardware, and retail shopkeepers manage accounts directly inside WhatsApp."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can I use DukaanMitra on PC or Desktop without downloading heavy software?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. DukaanMitra works directly inside WhatsApp Web and any desktop browser at https://dukaanmitra.in/dashboard on Windows PC, Mac, and mobile phones."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where can I download DukaanMitra brochures and free shop inventory CSV templates?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You can download the official 2026 PDF brochure, Retail Inventory CSV template, Udhaar Khata CSV tracker, and WhatsApp Setup DOCX guide for free at https://dukaanmitra.in/downloads."
+                }
+              }
+            ]
+          }
+        ]
       }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(done);
-      } else {
-        done();
-      }
-    });
-  }
+    </script>
 
-  // Local stack links: warn if the page is opened via file:// so people know
-  // why localhost services do not respond yet.
-  document.querySelectorAll("a[data-local]").forEach(function (link) {
-    link.addEventListener("click", function () {
-      if (location.protocol === "file:") {
-        // Still allow the click; the browser will show its own error.
-        console.info("Local stack links need: .\\scripts\\start-all.ps1");
-      }
-    });
-  });
-
-  var form = document.getElementById("briefForm");
-  var success = document.getElementById("briefSuccess");
-  var btn = document.getElementById("briefBtn");
-  var WA_NUMBER = "916393741171"; // founder's WhatsApp business number
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-    if (!form.reportValidity()) return;
-
-    var data = {
-      name: document.getElementById("mName").value.trim(),
-      business: document.getElementById("mBusiness").value.trim(),
-      city: document.getElementById("mCity").value.trim(),
-      whatsapp: document.getElementById("mPhone").value.trim(),
-      need: document.getElementById("mNeed").value,
-      source: "mitra-system"
-    };
-
-    try { localStorage.setItem("mitra_lead", JSON.stringify(data)); } catch (err) {}
-
-    var text = "Namaste Mitra System!%0A%0A"
-      + "Naam: " + encodeURIComponent(data.name) + "%0A"
-      + "Business: " + encodeURIComponent(data.business) + "%0A"
-      + "City: " + encodeURIComponent(data.city) + "%0A"
-      + "WhatsApp: " + encodeURIComponent(data.whatsapp) + "%0A"
-      + "Chahiye: " + encodeURIComponent(data.need) + "%0A%0A"
-      + "Please 20-minute discovery call schedule karein.";
-
-    var url = "https://wa.me/" + WA_NUMBER + "?text=" + text;
-    success.innerHTML = "Brief save ho gaya. <a href=\"" + url + "\" target=\"_blank\" rel=\"noopener\">WhatsApp par bhejein</a> — ya direct chat khul raha hai.";
-    success.classList.add("show");
-    btn.textContent = "Brief ready ✓";
-    window.open(url, "_blank", "noopener");
-  });
-})();
-</script>
-</body>
+    <!-- Ahrefs Web Analytics -->
+    <script src="https://analytics.ahrefs.com/analytics.js" data-key="9czxiMabyJsEGPdQrksobg" async></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>
